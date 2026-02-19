@@ -1,0 +1,21 @@
+# Dependencies
+/vendor/
+
+# IDE
+/.vscode/
+/.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Ignore semua file test di public
+public/test_*.php
+public/test-*.php
+public/*test*.php

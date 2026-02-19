@@ -1,0 +1,12 @@
+{
+  "name": "ambatulearncode/belajar-mvc-karyawan",
+  "description": "Sistem Manajemen Karyawan dengan MVC PHP Native",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Core\\": "core/"
+    }
+  },
+  "require": {}
+}
