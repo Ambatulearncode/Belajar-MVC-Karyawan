@@ -4,23 +4,16 @@ namespace Core;
 
 class Controller
 {
-    protected function view(string $view, array $data = [])
+    protected function view(string $view, array $data = []): void
     {
+
         extract($data);
-
-        $viewFile = __DIR__ . "/../app/views/" . $view . ".php";
-
-        // ! Validasi file ada gak.
-        if (file_exists($viewFile)) {
-            require_once $viewFile;
-        } else {
-            die("View tidak ditemukan: " . $view . ".php di folder app/views/");
-        }
+        include __DIR__ . "/../app/views/layouts/main.php";
     }
 
-    protected function redirect($url)
+    protected function renderPartial(string $partial, array $data = [])
     {
-        header("Location: " . $url);
-        exit;
+        extract($data);
+        include_once __DIR__ . "/../app/views/partials/{$partial}.php";
     }
 }
