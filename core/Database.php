@@ -13,11 +13,28 @@ class Database
     private string $password;
     private ?PDO $pdo = null;
 
+    private static ?Database $instance = null;
+
     public function __construct()
     {
         $this->loadEnv();
         $this->validateConfig();
         $this->connect();
+    }
+
+    public static function getInstance(): Database
+    {
+        if (self::$instance == null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+
+    private function __clone() {}
+
+    public function __wakeup()
+    {
+        throw new \Exception("Cannot unserialize singelton");
     }
 
     private function loadEnv(): void
@@ -53,7 +70,6 @@ class Database
             $errors[] = "Database tidal boleh kosong";
         }
 
-        // ! Validasi tambahan
         if (!empty($this->host) && !preg_match('/^[a-zA-Z0-9\.\-]+$/', $this->host)) {
             $errors[] = "Format tidak valid";
         }
@@ -83,5 +99,15 @@ class Database
             $this->connect();
         }
         return $this->pdo;
+    }
+
+    public function testConnection(): bool
+    {
+        try {
+            $this->getConnection()->query('SELECT 1');
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 }

@@ -18,7 +18,7 @@ class KaryawanModel
     private function connectDb(): void
     {
         try {
-            $database = new Database();
+            $database = Database::getInstance();
             $this->db = $database->getConnection();
         } catch (PDOException $e) {
             die("Gagal konek ke database: " . $e->getMessage());
@@ -28,7 +28,7 @@ class KaryawanModel
     public function getAllKaryawan(): array
     {
         try {
-            $query = "SELECT * FROM karyawan ORDER BY id DESC";
+            $query = "SELECT * FROM karyawan";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -55,8 +55,10 @@ class KaryawanModel
     public function create(array $data): bool
     {
         try {
-            $query = "INSERT INTO karyawan (nama, jabatan, gaji, tanggal_masuk) VALUES (:nama, :jabatan, :gaji, :tanggal_masuk)";
+            $nik = $this->generateNik();
+            $query = "INSERT INTO karyawan (nik, nama, jabatan, gaji, tanggal_masuk) VALUES (:nik, :nama, :jabatan, :gaji, :tanggal_masuk)";
             $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':nik', $nik);
             $stmt->bindParam(':nama', $data['nama']);
             $stmt->bindParam(':jabatan', $data['jabatan']);
             $stmt->bindParam(':gaji', $data['gaji']);
@@ -72,8 +74,9 @@ class KaryawanModel
     public function update(int $id, array $data): bool
     {
         try {
-            $query = "UPDATE karyawan SET nama = :nama, jabatan = :jabatan, gaji = :gaji, tanggal_masuk = :tanggal_masuk WHERE id = :id";
+            $query = "UPDATE karyawan SET nama = :nik, :nama, jabatan = :jabatan, gaji = :gaji, tanggal_masuk = :tanggal_masuk WHERE id = :id";
             $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':nik', $data['nik']);
             $stmt->bindParam(':nama', $data['nama']);
             $stmt->bindParam(':jabatan', $data['jabatan']);
             $stmt->bindParam(':gaji', $data['gaji']);
@@ -99,6 +102,38 @@ class KaryawanModel
         } catch (PDOException $e) {
             error_log("Error delete " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function generateNik(): string
+    {
+        try {
+            $tahun = date('Y');
+            $bulan = date('m');
+            $tanggal = date('d');
+
+            $prefix = $tahun . $bulan . $tanggal;
+
+            $query = "SELECT nik FROM karyawan WHERE nik LIKE :prefix ORDER BY nik DESC LIMIT 1";
+
+            $stmt = $this->db->prepare($query);
+            $searchPrefix = $prefix . '%';
+            $stmt->bindParam(':prefix', $searchPrefix);
+            $stmt->execute();
+
+            $lastNIK = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($lastNIK) {
+                $lastNumber = (int)substr($lastNIK['nik'], -6);
+                $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '000001';
+            }
+
+            return $prefix . $newNumber;
+        } catch (PDOException $e) {
+            error_log('Error generateNik ' . $e->getMessage());
+            return $tahun . $bulan . date('His');
         }
     }
 }

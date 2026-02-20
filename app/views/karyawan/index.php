@@ -82,7 +82,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-hash mr-1"></i> ID
+                                <i class="bi bi-hash mr-1"></i> NIK
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <i class="bi bi-person mr-1"></i> Nama
@@ -106,7 +106,7 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                        #<?= $k['id'] ?>
+                                        #<?= $k['nik'] ?>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

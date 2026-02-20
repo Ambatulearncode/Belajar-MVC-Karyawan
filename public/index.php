@@ -1,20 +1,52 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
-// Include helper
 require_once __DIR__ . '/../utils/helpers.php';
 
-// Simple routing
-$url = $_GET['url'] ?? 'karyawan';
-$action = $_GET['action'] ?? 'index';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+$url = $_GET['url'] ?? 'auth';
+$action = $_GET['action'] ?? 'login';
 $id = $_GET['id'] ?? null;
 
-// Debug: Tampilkan parameter
-// echo "URL: $url, Action: $action, ID: $id<br>";
 
 switch ($url) {
+    case "auth":
+        $controller = new App\Controllers\AuthController();
+
+        switch ($action) {
+            case 'login':
+                $controller->login();
+                break;
+            case 'authenticate':
+                $controller->authenticate();
+                break;
+            case 'logout':
+                $controller->logout();
+                break;
+            case 'dashboard':
+                $controller->dashboard();
+                break;
+            case 'unauthorized':
+                $controller->unauthorized();
+                break;
+            default:
+                $controller->login();
+                break;
+        }
+        break;
+
     case "karyawan":
+        session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            header('Location: index.php?url=auth&action=login');
+            exit;
+        }
+
         $controller = new App\Controllers\KaryawanController();
 
         switch ($action) {

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\KaryawanModel;
 use Core\Controller;
+use Core\Auth;
 
 class KaryawanController extends Controller
 {
@@ -11,6 +12,7 @@ class KaryawanController extends Controller
 
     public function __construct()
     {
+        Auth::requireAdmin();
         $this->karyawanModel = new KaryawanModel;
     }
 
@@ -20,7 +22,8 @@ class KaryawanController extends Controller
             $karyawan = $this->karyawanModel->getAllKaryawan();
             $this->view('karyawan/index', [
                 'karyawan' => $karyawan,
-                'judul' => 'Daftar Karyawan'
+                'judul' => 'Daftar Karyawan',
+                'user' => Auth::user()
             ]);
         } catch (\Exception $e) {
             $this->view('error', [
@@ -40,16 +43,15 @@ class KaryawanController extends Controller
     {
         // Validasi method request
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /?url=karyawan');
+            header('Location: index.php?url=karyawan');
             exit;
         }
 
         // Inisialisasi errors
         $errors = [];
 
-        // Sanitize input
+        // Sanitize input - HAPUS EMAIL
         $nama = trim($_POST['nama'] ?? '');
-        $email = trim($_POST['email'] ?? '');
         $jabatan = trim($_POST['jabatan'] ?? '');
         $gaji = trim($_POST['gaji'] ?? '');
         $tanggal_masuk = trim($_POST['tanggal_masuk'] ?? '');
@@ -91,7 +93,6 @@ class KaryawanController extends Controller
                 'errors' => $errors,
                 'old' => [
                     'nama' => $nama,
-                    'email' => $email,
                     'jabatan' => $jabatan,
                     'gaji' => $gaji,
                     'tanggal_masuk' => $tanggal_masuk
@@ -104,9 +105,8 @@ class KaryawanController extends Controller
         try {
             $data = [
                 'nama' => $nama,
-                'email' => $email,
                 'jabatan' => $jabatan,
-                'gaji' => (float) $gaji, // Convert ke float
+                'gaji' => (float) $gaji,
                 'tanggal_masuk' => $tanggal_masuk
             ];
 
@@ -145,35 +145,34 @@ class KaryawanController extends Controller
     {
         // Validasi method request
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /?url=karyawan');
+            header('Location: index.php?url=karyawan');
             exit;
         }
 
         // Inisialisasi errors
         $errors = [];
 
-        // Sanitize input
+        // Sanitize input - HAPUS EMAIL
         $nama = trim($_POST['nama'] ?? '');
-        $email = trim($_POST['email'] ?? '');
         $jabatan = trim($_POST['jabatan'] ?? '');
         $gaji = trim($_POST['gaji'] ?? '');
         $tanggal_masuk = trim($_POST['tanggal_masuk'] ?? '');
 
-        // Validasi Nama
+        // ? Validasi Nama
         if (empty($nama)) {
             $errors[] = 'Nama harus diisi';
         } elseif (strlen($nama) < 3) {
             $errors[] = 'Nama minimal 3 karakter';
         }
 
-        // Validasi Jabatan
+        // ? Validasi Jabatan
         if (empty($jabatan)) {
             $errors[] = 'Jabatan harus diisi';
         } elseif (strlen($jabatan) < 3) {
             $errors[] = 'Jabatan minimal 3 karakter';
         }
 
-        // Validasi Gaji
+        // ? Validasi Gaji
         if (empty($gaji)) {
             $errors[] = 'Gaji harus diisi';
         } elseif (!is_numeric($gaji)) {
@@ -182,20 +181,20 @@ class KaryawanController extends Controller
             $errors[] = 'Gaji harus bernilai positif';
         }
 
-        // Validasi Tanggal Masuk
+        // ? Validasi Tanggal Masuk
         if (empty($tanggal_masuk)) {
             $errors[] = 'Tanggal masuk harus diisi';
         } elseif (!strtotime($tanggal_masuk)) {
             $errors[] = 'Format tanggal tidak valid';
         }
 
-        // Jika ada errors, tampilkan form kembali dengan data lama
+        // ? Jika ada errors, tampilkan form kembali dengan data lama
         if (!empty($errors)) {
             try {
                 $karyawan = $this->karyawanModel->getKaryawanById($id);
 
                 if (!$karyawan) {
-                    header('Location: /?url=karyawan');
+                    header('Location: index.php?url=karyawan');
                     exit;
                 }
 
@@ -205,7 +204,6 @@ class KaryawanController extends Controller
                     'errors' => $errors,
                     'old' => [
                         'nama' => $nama,
-                        'email' => $email,
                         'jabatan' => $jabatan,
                         'gaji' => $gaji,
                         'tanggal_masuk' => $tanggal_masuk
@@ -220,19 +218,23 @@ class KaryawanController extends Controller
             }
         }
 
-        // Jika validasi sukses, update data
+        // ? Jika validasi sukses, update data
         try {
             $data = [
                 'nama' => $nama,
-                'email' => $email,
                 'jabatan' => $jabatan,
                 'gaji' => (float) $gaji,
                 'tanggal_masuk' => $tanggal_masuk
             ];
 
-            $this->karyawanModel->update($id, $data);
-            header('Location: index.php?url=karyawan');
-            exit;
+            $result = $this->karyawanModel->update($id, $data);
+
+            if ($result) {
+                header('Location: index.php?url=karyawan');
+                exit;
+            } else {
+                throw new \Exception("Update gagal tanpa error message");
+            }
         } catch (\Exception $e) {
             $this->view('error', [
                 'message' => 'Gagal mengupdate data: ' . $e->getMessage()
@@ -240,6 +242,7 @@ class KaryawanController extends Controller
         }
     }
 
+    // ? Delete Method
     public function delete(int $id): void
     {
         try {
