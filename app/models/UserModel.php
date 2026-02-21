@@ -144,4 +144,18 @@ class UserModel
             return null;
         }
     }
+
+    public function getUserById(int $id): ?array
+    {
+        try {
+            $query = "SELECT * FROM users WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getUserById " . $e->getMessage());
+            return null;
+        }
+    }
 }

@@ -126,16 +126,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <button class="joko-btn joko-btn-warning joko-btn-sm inline-flex items-center"
-                                            onclick="alert('Fitur edit admin akan segera tersedia!')">
+                                        <a href="<?= url('/?url=admin&action=edit&id=' . $admin['id']) ?>"
+                                            class="joko-btn joko-btn-warning joko-btn-sm inline-flex items-center">
                                             <i class="bi bi-pencil mr-1"></i>
                                             Edit
-                                        </button>
-                                        <button class="joko-btn joko-btn-danger joko-btn-sm inline-flex items-center"
-                                            onclick="confirmDeleteAdmin('<?= htmlspecialchars($admin['username']) ?>', <?= $admin['id'] ?>)">
+                                        </a>
+                                        <a href="<?= url('/?url=admin&action=delete&id=' . $admin['id']) ?>"
+                                            class="joko-btn joko-btn-danger joko-btn-sm inline-flex items-center"
+                                            onclick="return confirmDelete('<?= htmlspecialchars($k['nama']) ?>')">
                                             <i class="bi bi-trash mr-1"></i>
                                             Hapus
-                                        </button>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

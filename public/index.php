@@ -106,9 +106,22 @@ switch ($url) {
             case 'store':
                 $controller->store();
                 break;
+            case 'edit':
+                if ($id) {
+                    $controller->edit((int)$id);
+                } else {
+                    $controller->index();
+                }
+                break;
+            case 'delete':
+                if ($id) {
+                    $controller->delete((int)$id);
+                } else {
+                    $controller->index();
+                }
+                break;
             default:
-                // Default: redirect ke create page
-                header('Location: index.php?url=admin&action=index');
+                $controller->index();
                 exit;
                 break;
         }
