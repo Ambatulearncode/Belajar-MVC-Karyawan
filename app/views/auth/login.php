@@ -81,21 +81,5 @@
                 </button>
             </div>
         </form>
-
-        <!-- Demo Credentials -->
-        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="bi bi-info-circle text-yellow-400"></i>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Demo Credentials</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p><strong>Admin:</strong> admin / admin123</p>
-                        <p class="mt-1 text-xs">*Hanya admin yang bisa akses dashboard karyawan</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

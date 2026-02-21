@@ -56,7 +56,16 @@ class Auth
     public static function isAdmin(): bool
     {
         self::startSession();
-        return isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin';
+        // Admin: role 'admin' ATAU superadmin
+        return isset($_SESSION['user']) &&
+            ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'superadmin');
+    }
+
+    public static function isSuperAdmin(): bool
+    {
+        self::startSession();
+        // Superadmin: role 'superadmin'
+        return isset($_SESSION['user']) && $_SESSION['user']['role'] === 'superadmin';
     }
 
     public static function user(): ?array
@@ -70,6 +79,7 @@ class Auth
         self::startSession();
         return $_SESSION['user']['id'] ?? null;
     }
+
     public static function requireLogin(): void
     {
         if (!self::check()) {
@@ -83,6 +93,17 @@ class Auth
         self::requireLogin();
 
         if (!self::isAdmin()) {
+            header('Location: index.php?url=auth&action=unauthorized');
+            exit;
+        }
+    }
+
+    // NEW: Require superadmin
+    public static function requireSuperAdmin(): void
+    {
+        self::requireLogin();
+
+        if (!self::isSuperAdmin()) {
             header('Location: index.php?url=auth&action=unauthorized');
             exit;
         }

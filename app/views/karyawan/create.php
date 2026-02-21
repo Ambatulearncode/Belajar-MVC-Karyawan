@@ -55,7 +55,7 @@
     <div class="bg-white rounded-xl card-shadow p-6 md:p-8">
         <form method="POST" action="?url=karyawan&action=store" class="space-y-6">
             <!-- Nama Field -->
-            <div>
+            <div class="pb-4 border-b border-gray-200">
                 <label for="nama" class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="bi bi-person mr-1"></i>
                     Nama Lengkap <span class="text-red-500">*</span>
@@ -76,7 +76,7 @@
             </div>
 
             <!-- Jabatan Field -->
-            <div>
+            <div class="pb-4 border-b border-gray-200">
                 <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="bi bi-briefcase mr-1"></i>
                     Jabatan <span class="text-red-500">*</span>
@@ -98,7 +98,7 @@
             </div>
 
             <!-- Gaji Field -->
-            <div>
+            <div class="pb-4 border-b border-gray-200">
                 <label for="gaji" class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="bi bi-cash-coin mr-1"></i>
                     Gaji <span class="text-red-500">*</span>
@@ -117,10 +117,14 @@
                         step="100000"
                         required>
                 </div>
+                <p class="mt-1 text-sm text-gray-500">
+                    <i class="bi bi-info-circle mr-1"></i>
+                    Contoh: 5000000 untuk 5 juta rupiah
+                </p>
             </div>
 
             <!-- Tanggal Masuk Field -->
-            <div>
+            <div class="pb-4">
                 <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="bi bi-calendar3 mr-1"></i>
                     Tanggal Masuk <span class="text-red-500">*</span>
@@ -131,17 +135,24 @@
                     value="<?= isset($old['tanggal_masuk']) ? htmlspecialchars($old['tanggal_masuk']) : '' ?>"
                     class="joko-input w-full"
                     required>
+                <p class="mt-1 text-sm text-gray-500">
+                    <i class="bi bi-info-circle mr-1"></i>
+                    Pilih tanggal pertama karyawan bergabung
+                </p>
             </div>
 
             <!-- Form Actions -->
-            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                <!-- Simpan Button (Primary - Biru) -->
                 <button type="submit"
-                    class="joko-btn joko-btn-primary flex-1 inline-flex items-center justify-center">
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex-1 inline-flex items-center justify-center">
                     <i class="bi bi-check-circle mr-2"></i>
                     Simpan Data
                 </button>
-                <a href="?url=karyawan&action=store"
-                    class="joko-btn joko-btn-secondary flex-1 inline-flex items-center justify-center">
+
+                <!-- Batal Button (Secondary - Abu-abu) -->
+                <a href="?url=karyawan"
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex-1 inline-flex items-center justify-center">
                     <i class="bi bi-x-circle mr-2"></i>
                     Batal
                 </a>
@@ -160,9 +171,9 @@
                 <div class="mt-2 text-sm text-blue-700">
                     <ul class="list-disc pl-5 space-y-1">
                         <li>Pastikan semua field yang bertanda <span class="text-red-500">*</span> diisi</li>
-                        <li>Email harus valid dan aktif</li>
-                        <li>Gaji diisi tanpa titik atau koma</li>
+                        <li>Gaji diisi tanpa titik atau koma (contoh: 5000000)</li>
                         <li>Data akan langsung tersimpan setelah tombol "Simpan" ditekan</li>
+                        <li>Pastikan tanggal masuk sesuai dengan kontrak kerja</li>
                     </ul>
                 </div>
             </div>

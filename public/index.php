@@ -3,16 +3,15 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../utils/helpers.php';
 
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
 
 $url = $_GET['url'] ?? 'auth';
 $action = $_GET['action'] ?? 'login';
 $id = $_GET['id'] ?? null;
 
+use Core\Auth;
 
 switch ($url) {
     case "auth":
@@ -41,10 +40,11 @@ switch ($url) {
         break;
 
     case "karyawan":
-        session_start();
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-            header('Location: index.php?url=auth&action=login');
-            exit;
+        Auth::requireLogin();
+
+        if (!Auth::isAdmin()) {
+            header('Location: index.php?url=auth&action=unauthorized');
+            exit();
         }
 
         $controller = new App\Controllers\KaryawanController();
@@ -82,6 +82,34 @@ switch ($url) {
                 break;
             default:
                 $controller->index();
+                break;
+        }
+        break;
+
+    case "admin":
+        // Cek login
+        Auth::requireLogin();
+
+        if (!Auth::isSuperAdmin()) {
+            header('Location: index.php?url=auth&action=unauthorized');
+            exit;
+        }
+        $controller = new App\Controllers\AdminController();
+
+        switch ($action) {
+            case 'index':
+                $controller->index();
+                break;
+            case 'create':
+                $controller->create();
+                break;
+            case 'store':
+                $controller->store();
+                break;
+            default:
+                // Default: redirect ke create page
+                header('Location: index.php?url=admin&action=index');
+                exit;
                 break;
         }
         break;

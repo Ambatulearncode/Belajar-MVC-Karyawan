@@ -5,8 +5,8 @@
             <h1 class="text-3xl font-bold text-gray-800"><?= $judul ?? 'Daftar Karyawan' ?></h1>
             <p class="text-gray-600 mt-2">Kelola data karyawan perusahaan dengan mudah</p>
         </div>
-        <a href="<?= url('/?url=karyawan&action=create') ?>"
-            class="joko-btn joko-btn-primary hover-lift inline-flex items-center">
+        <a href="index.php?url=karyawan&action=create"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center">
             <i class="bi bi-plus-circle mr-2"></i>
             Tambah Karyawan
         </a>

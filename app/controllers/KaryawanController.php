@@ -26,9 +26,10 @@ class KaryawanController extends Controller
                 'user' => Auth::user()
             ]);
         } catch (\Exception $e) {
-            $this->view('error', [
-                'message' => 'Gagal mengambil data karyawan: ' . $e->getMessage()
-            ]);
+            // Redirect dengan error message
+            $_SESSION['error'] = 'Gagal mengambil data karyawan: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan');
+            exit;
         }
     }
 
@@ -111,12 +112,14 @@ class KaryawanController extends Controller
             ];
 
             $this->karyawanModel->create($data);
+            $_SESSION['success'] = 'Data karyawan berhasil ditambahkan!';
             header('Location: index.php?url=karyawan');
             exit;
         } catch (\Exception $e) {
-            $this->view('error', [
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
-            ]);
+            // Redirect dengan error message
+            $_SESSION['error'] = 'Gagal menyimpan data: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan&action=create');
+            exit;
         }
     }
 
@@ -126,6 +129,7 @@ class KaryawanController extends Controller
             $karyawan = $this->karyawanModel->getKaryawanById($id);
 
             if (!$karyawan) {
+                $_SESSION['error'] = 'Data karyawan tidak ditemukan!';
                 header('Location: index.php?url=karyawan');
                 exit;
             }
@@ -135,9 +139,10 @@ class KaryawanController extends Controller
                 'judul' => 'Edit Karyawan'
             ]);
         } catch (\Exception $e) {
-            $this->view('error', [
-                'message' => 'Gagal mengambil data: ' . $e->getMessage()
-            ]);
+            // Redirect dengan error message
+            $_SESSION['error'] = 'Gagal mengambil data: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan');
+            exit;
         }
     }
 
@@ -194,6 +199,7 @@ class KaryawanController extends Controller
                 $karyawan = $this->karyawanModel->getKaryawanById($id);
 
                 if (!$karyawan) {
+                    $_SESSION['error'] = 'Data karyawan tidak ditemukan!';
                     header('Location: index.php?url=karyawan');
                     exit;
                 }
@@ -211,10 +217,10 @@ class KaryawanController extends Controller
                 ]);
                 return;
             } catch (\Exception $e) {
-                $this->view('error', [
-                    'message' => 'Gagal: ' . $e->getMessage()
-                ]);
-                return;
+                // Redirect dengan error message
+                $_SESSION['error'] = 'Gagal: ' . $e->getMessage();
+                header('Location: index.php?url=karyawan');
+                exit;
             }
         }
 
@@ -230,15 +236,17 @@ class KaryawanController extends Controller
             $result = $this->karyawanModel->update($id, $data);
 
             if ($result) {
+                $_SESSION['success'] = 'Data karyawan berhasil diperbarui!';
                 header('Location: index.php?url=karyawan');
                 exit;
             } else {
                 throw new \Exception("Update gagal tanpa error message");
             }
         } catch (\Exception $e) {
-            $this->view('error', [
-                'message' => 'Gagal mengupdate data: ' . $e->getMessage()
-            ]);
+            // Redirect dengan error message
+            $_SESSION['error'] = 'Gagal mengupdate data: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan&action=edit&id=' . $id);
+            exit;
         }
     }
 
@@ -247,12 +255,14 @@ class KaryawanController extends Controller
     {
         try {
             $this->karyawanModel->delete($id);
+            $_SESSION['success'] = 'Data karyawan berhasil dihapus!';
             header('Location: index.php?url=karyawan');
             exit;
         } catch (\Exception $e) {
-            $this->view('error', [
-                'message' => 'Gagal menghapus data: ' . $e->getMessage()
-            ]);
+            // Redirect dengan error message
+            $_SESSION['error'] = 'Gagal menghapus data: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan');
+            exit;
         }
     }
 }

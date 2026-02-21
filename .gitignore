@@ -19,3 +19,5 @@ Thumbs.db
 public/test_*.php
 public/test-*.php
 public/*test*.php
+
+/tests

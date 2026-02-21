@@ -25,15 +25,22 @@ class UserModel
         }
     }
 
-    public function findByUsernameOrEmail(string $identifier): array|false
+    public function findByUsernameOrEmail(string $identifier): ?array
     {
-        $stmt = $this->db->prepare("
+        try {
+            $stmt = $this->db->prepare("
             SELECT * FROM users 
             WHERE username = :identifier OR email = :identifier
             LIMIT 1
-        ");
-        $stmt->execute(['identifier' => $identifier]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+            ");
+            $stmt->execute(['identifier' => $identifier]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+        } catch (PDOException $e) {
+            error_log('Error findByUsernameOrEmail ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function create(array $data): bool
@@ -44,7 +51,7 @@ class UserModel
             $stmt->execute([
                 'username' => $data['username'],
                 'email' => $data['email'],
-                'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+                'password' => $data['password'],
                 'role' => $data['role'] ?? 'user'
             ]);
             return $stmt->rowCount() > 0;
@@ -100,6 +107,41 @@ class UserModel
         } catch (PDOException $e) {
             error_log("Error User delete " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function getAllAdmins(): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE role = 'admin' ORDER BY created_at DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findByUsername(string $username): ?array
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE username = :username LIMIT 1");
+            $stmt->execute(['username' => $username]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+        } catch (PDOException $e) {
+            error_log('Error findByUsername: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function findByEmail(string $email): ?array
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+            $stmt->execute(['email' => $email]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+        } catch (PDOException $e) {
+            error_log('Error findByEmail: ' . $e->getMessage());
+            return null;
         }
     }
 }

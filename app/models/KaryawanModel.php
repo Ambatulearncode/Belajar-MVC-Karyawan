@@ -74,18 +74,25 @@ class KaryawanModel
     public function update(int $id, array $data): bool
     {
         try {
-            $query = "UPDATE karyawan SET nama = :nik, :nama, jabatan = :jabatan, gaji = :gaji, tanggal_masuk = :tanggal_masuk WHERE id = :id";
+            $query = "UPDATE karyawan 
+            SET nama = :nama, 
+            jabatan = :jabatan, 
+            gaji = :gaji, 
+            tanggal_masuk = :tanggal_masuk 
+            WHERE id = :id";
+
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':nik', $data['nik']);
-            $stmt->bindParam(':nama', $data['nama']);
-            $stmt->bindParam(':jabatan', $data['jabatan']);
-            $stmt->bindParam(':gaji', $data['gaji']);
-            $stmt->bindParam(':tanggal_masuk', $data['tanggal_masuk']);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-            return $stmt->rowCount() > 0;
+
+            return $stmt->execute([
+                ':nama' => $data['nama'],
+                ':jabatan' => $data['jabatan'],
+                ':gaji' => (float) $data['gaji'], // Cast ke float dulu
+                ':tanggal_masuk' => $data['tanggal_masuk'],
+                ':id' => $id
+            ]);
         } catch (PDOException $e) {
-            error_log("Error update" . $e->getMessage());
+            error_log("Error update: " . $e->getMessage());
+            error_log("Data: " . print_r($data, true));
             return false;
         }
     }

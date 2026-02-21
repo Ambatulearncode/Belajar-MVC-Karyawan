@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         // Jika sudah login, redirect ke dashboard
         if (Auth::check()) {
-            header('Location: index.php?url=karyawan');
+            $this->redirectBasedOnRole();
             exit;
         }
 
@@ -63,11 +63,7 @@ class AuthController extends Controller
                 Auth::login($user);
 
                 // Redirect berdasarkan role
-                if ($user['role'] === 'admin') {
-                    header('Location: index.php?url=karyawan');
-                } else {
-                    header('Location: index.php?url=dashboard');
-                }
+                $this->redirectBasedOnRole();
                 exit;
             } else {
                 $errors[] = 'Username/email atau password salah';
@@ -80,6 +76,24 @@ class AuthController extends Controller
             'errors' => $errors,
             'old' => ['username' => $identifier]
         ]);
+    }
+
+    private function redirectBasedOnRole(): void
+    {
+        if (!Auth::check()) {
+            header('Location: index.php?url=auth&action=login');
+            exit;
+        }
+
+        $user = Auth::user();
+
+        if ($user['role'] === 'superadmin' || $user['role'] === 'admin') {
+            header('Location: index.php?url=karyawan');
+            exit;
+        } else {
+            header('Location: index.php?url=auth&action=dashboard');
+            exit;
+        }
     }
 
     /**
@@ -108,6 +122,11 @@ class AuthController extends Controller
     public function dashboard(): void
     {
         Auth::requireLogin();
+
+        if (Auth::isAdmin()) {
+            header('Location: index.php?url=karyawan');
+            exit;
+        }
 
         $this->view('auth/dashboard', [
             'judul' => 'Dashboard User',
