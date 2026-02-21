@@ -84,6 +84,17 @@
                 opacity: 0;
             }
         }
+
+        /* Zebra striping untuk tabel */
+        .table-zebra tbody tr:nth-child(even) {
+            background-color: #eff6ff;
+            /* bg-blue-50 */
+        }
+
+        .table-zebra tbody tr:nth-child(even):hover {
+            background-color: #dbeafe;
+            /* bg-blue-100 saat hover */
+        }
     </style>
 </head>
 <!-- Navbar -->

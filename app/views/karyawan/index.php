@@ -78,7 +78,7 @@
         <!-- Data Table -->
         <div class="bg-white rounded-xl card-shadow overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 table-zebra">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -102,7 +102,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <?php foreach ($karyawan as $k): ?>
+                        <?php foreach ($karyawan as $index => $k): ?>
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
@@ -123,8 +123,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    <?= $k['jabatan'] == 'Manager' ? 'bg-purple-100 text-purple-800' : ($k['jabatan'] == 'Staff IT' ? 'bg-blue-100 text-blue-800' :
-                                        'bg-gray-100 text-gray-800') ?>">
+                            <?= $k['jabatan'] == 'Manager' ? 'bg-purple-100 text-purple-800' : ($k['jabatan'] == 'Staff IT' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800') ?>">
                                         <?= htmlspecialchars($k['jabatan']) ?>
                                     </span>
                                 </td>
@@ -145,14 +145,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="<?= url('/?url=karyawan&action=edit&id=' . $k['id']) ?>"
-                                            class="joko-btn joko-btn-warning joko-btn-sm inline-flex items-center">
+                                            class="joko-btn joko-btn-warning joko-btn-sm inline-flex items-center text-green-600 hover:text-green-800 font-bold">
                                             <i class="bi bi-pencil mr-1"></i>
                                             Edit
                                         </a>
                                         <a href="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
                                             data-confirm-delete
                                             data-item-name="<?= htmlspecialchars($k['nama']) ?>"
-                                            class="text-red-600 hover:text-red-800">
+                                            class="text-red-600 hover:text-red-800 font-bold">
                                             <i class="bi bi-trash mr-1"></i>
                                             Hapus
                                         </a>
@@ -163,21 +163,4 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- Table Footer -->
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <div class="text-sm text-gray-600 mb-2 md:mb-0">
-                        <i class="bi bi-info-circle mr-1"></i>
-                        Menampilkan <span class="font-bold"><?= count($karyawan) ?></span> data karyawan
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        <span class="font-semibold">Total Gaji Bulanan:</span>
-                        <span class="font-bold text-green-600 ml-2">
-                            Rp <?= number_format(array_sum(array_column($karyawan, 'gaji')), 0, ',', '.') ?>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <?php endif;
+        <?php endif;

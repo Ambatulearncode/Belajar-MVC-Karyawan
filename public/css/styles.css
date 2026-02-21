@@ -1,0 +1,15 @@
+/* Di public/css/styles.css atau di Joko UI framework */
+
+.joko-table-striped tbody tr:nth-child(even) {
+  background-color: #eff6ff; /* blue-50 */
+}
+
+.joko-table-striped tbody tr:hover {
+  background-color: #dbeafe; /* blue-100 */
+  transition: all 0.2s;
+}
+
+/* Kalo pake mode gelap (dark mode) */
+.dark .joko-table-striped tbody tr:nth-child(even) {
+  background-color: #1e3a8a33; /* blue-900 dengan opacity */
+}
