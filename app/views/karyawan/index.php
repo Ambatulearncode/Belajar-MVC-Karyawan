@@ -14,15 +14,15 @@
 
     <?php if (empty($karyawan)): ?>
         <!-- Empty State -->
-        <div class="joko-card text-white p-8 text-center rounded-xl shadow-lg">
+        <div class="bg-blue-50 border border-blue-200 p-8 text-center rounded-xl shadow-lg">
             <div class="mb-6">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mb-4">
-                    <i class="bi bi-people text-3xl"></i>
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                    <i class="bi bi-people text-3xl text-blue-600"></i>
                 </div>
-                <h3 class="text-2xl font-bold mb-2">Belum Ada Data Karyawan</h3>
-                <p class="opacity-90 mb-6">Mulai dengan menambahkan data karyawan pertama Anda</p>
+                <h3 class="text-2xl font-bold mb-2 text-gray-800">Belum Ada Data Karyawan</h3>
+                <p class="text-gray-600 mb-6">Mulai dengan menambahkan data karyawan pertama Anda</p>
                 <a href="<?= url('/?url=karyawan&action=create') ?>"
-                    class="joko-btn joko-btn-light inline-flex items-center">
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow inline-flex items-center">
                     <i class="bi bi-plus-lg mr-2"></i>
                     Tambah Data Pertama
                 </a>
@@ -149,9 +149,10 @@
                                             <i class="bi bi-pencil mr-1"></i>
                                             Edit
                                         </a>
-                                        <a href="<?= url('/?url=karyawan&action=delete&id=' . $k['id']) ?>"
-                                            class="joko-btn joko-btn-danger joko-btn-sm inline-flex items-center"
-                                            onclick="return confirmDelete('<?= htmlspecialchars($k['nama']) ?>')">
+                                        <a href="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
+                                            data-confirm-delete
+                                            data-item-name="<?= htmlspecialchars($k['nama']) ?>"
+                                            class="text-red-600 hover:text-red-800">
                                             <i class="bi bi-trash mr-1"></i>
                                             Hapus
                                         </a>

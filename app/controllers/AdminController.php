@@ -90,7 +90,7 @@ class AdminController extends Controller
             $data = [
                 'username' => $username,
                 'email' => $email,
-                'password' => password_hash($password, PASSWORD_DEFAULT), // Nanti di-hash di model
+                'password' => password_hash($password, PASSWORD_DEFAULT),
                 'role' => 'admin'
             ];
 

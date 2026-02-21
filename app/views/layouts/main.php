@@ -59,14 +59,54 @@
         .transition-all {
             transition: all 0.3s ease;
         }
+
+        /* Animation for notifications */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
+<!-- Navbar -->
+<?php include __DIR__ . '/../partials/navbar.php'; ?>
 
-<body class="bg-gray-50 min-h-screen">
-    <div class="flex flex-col min-h-screen">
-        <!-- Navbar -->
-        <?php include __DIR__ . '/../partials/navbar.php'; ?>
-
+<body class="bg-gray-50 min-h-screen"
+    <?php if (!empty($_SESSION['success'])): ?>
+    data-success="<?= htmlspecialchars($_SESSION['success']) ?>"
+    <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['error'])): ?>
+    data-error="<?= htmlspecialchars($_SESSION['error']) ?>"
+    <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['info'])): ?>
+    data-info="<?= htmlspecialchars($_SESSION['info']) ?>"
+    <?php unset($_SESSION['info']); ?>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['warning'])): ?>
+    data-warning="<?= htmlspecialchars($_SESSION['warning']) ?>"
+    <?php unset($_SESSION['warning']); ?>
+    <?php endif; ?>>
+    <div
         <!-- Main Content -->
         <main class="flex-grow py-4 md:py-8">
             <div class="container mx-auto px-3 md:px-4">
@@ -103,25 +143,129 @@
         <?php include __DIR__ . '/../partials/footer.php'; ?>
     </div>
 
-    <!-- JavaScript -->
+    <!-- JavaScript Files -->
+    <script src="/belajar-mvc-karyawan/public/js/notifications.js"></script>
+    <script src="/belajar-mvc-karyawan/public/js/form-handler.js"></script>
+
+    <!-- Custom JavaScript -->
     <script>
-        // Confirm delete function
-        function confirmDelete(name) {
-            return confirm(`Yakin ingin menghapus data "${name}"?`);
-        }
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide existing alerts
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.joko-alert');
+                alerts.forEach(alert => {
+                    // Add slide down animation
+                    alert.style.transform = 'translateY(20px)';
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'all 0.3s ease-out';
 
-        // Auto-hide alerts
-        setTimeout(() => {
-            const alerts = document.querySelectorAll('.joko-alert');
-            alerts.forEach(alert => {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.5s';
-                setTimeout(() => alert.remove(), 500);
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.parentNode.removeChild(alert);
+                        }
+                    }, 300);
+                });
+            }, 5000);
+
+            // Confirm delete function (legacy support)
+            window.confirmDelete = function(name, url) {
+                if (window.FormHandler) {
+                    window.FormHandler.showDeleteConfirmation(name, function() {
+                        window.location.href = url;
+                    });
+                } else {
+                    // Fallback to native confirm
+                    if (confirm(`Yakin ingin menghapus data "${name}"?`)) {
+                        window.location.href = url;
+                    }
+                }
+                return false;
+            };
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Add loading state to all forms
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    if (submitButton && !submitButton.hasAttribute('data-no-loading')) {
+                        const originalHTML = submitButton.innerHTML;
+                        submitButton.innerHTML = `
+                        <i class="bi bi-arrow-repeat animate-spin mr-2"></i>
+                        Memproses...
+                    `;
+                        submitButton.disabled = true;
+
+                        // Restore after 5 seconds (in case of error)
+                        setTimeout(() => {
+                            submitButton.innerHTML = originalHTML;
+                            submitButton.disabled = false;
+                        }, 5000);
+                    }
+                });
             });
-        }, 5000);
 
-        // Mobile menu toggle (already in navbar.php)
+            // Add data attributes for form validation
+            const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+            requiredFields.forEach(field => {
+                if (!field.hasAttribute('data-required-message')) {
+                    field.setAttribute('data-required-message', 'Field ini wajib diisi');
+                }
+            });
+
+            // Show session notifications
+            if (window.Notifications) {
+                window.Notifications.showSessionNotifications();
+            }
+        });
+
+        // Handle AJAX form submissions
+        document.addEventListener('ajaxFormSubmit', function(e) {
+            const {
+                form,
+                response
+            } = e.detail;
+
+            if (response.success) {
+                if (window.Notifications) {
+                    window.Notifications.success(response.message || 'Berhasil!');
+                }
+
+                // Redirect if URL is provided
+                if (response.redirect) {
+                    setTimeout(() => {
+                        window.location.href = response.redirect;
+                    }, 1500);
+                }
+
+                // Reset form if needed
+                if (response.resetForm) {
+                    form.reset();
+                }
+            } else {
+                if (window.Notifications) {
+                    window.Notifications.error(response.message || 'Terjadi kesalahan!');
+                }
+
+                // Show field errors
+                if (response.errors && window.FormHandler) {
+                    Object.keys(response.errors).forEach(fieldName => {
+                        const field = form.querySelector(`[name="${fieldName}"]`);
+                        if (field) {
+                            window.FormHandler.showFieldError(field, response.errors[fieldName][0]);
+                        }
+                    });
+                }
+            }
+        });
     </script>
-</body>
-
-</html>
