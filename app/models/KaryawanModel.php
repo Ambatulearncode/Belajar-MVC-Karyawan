@@ -143,4 +143,66 @@ class KaryawanModel
             return $tahun . $bulan . date('His');
         }
     }
+
+    public function getPaginated(int $page = 1, int $perPage = 10): array
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+            $query = "SELECT * FROM karyawan ORDER BY id ASC LIMIT :limit OFFSET :offset";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getPaginated " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getTotalCount(): int
+    {
+        try {
+            $query = "SELECT COUNT(*) as total FROM karyawan";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (int) ($result['total'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Error getTotalCount " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getTotalSalary(): float
+    {
+        try {
+            $query = "SELECT SUM(gaji) as total_gaji FROM karyawan";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (float) ($result['total_gaji'] ?? 0);
+        } catch (PDOException $e) {
+            error_log('Error getTotalSalary ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getAverageSalary(): float
+    {
+        try {
+            $query = "SELECT AVG(gaji) as avg_gaji FROM karyawan";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (float) ($result['avg_gaji'] ?? 0);
+        } catch (PDOException $e) {
+            error_log('Error getAverageSalary ' . $e->getMessage());
+            return 0;
+        }
+    }
 }

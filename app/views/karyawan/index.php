@@ -39,7 +39,7 @@
                     </div>
                     <div>
                         <p class="text-gray-600 text-sm">Total Karyawan</p>
-                        <p class="text-2xl font-bold text-gray-800"><?= count($karyawan) ?></p>
+                        <p class="text-2xl font-bold text-gray-800"><?= $totalItems ?? count($karyawan) ?></p>
                     </div>
                 </div>
             </div>
@@ -53,7 +53,9 @@
                     <div>
                         <p class="text-gray-600 text-sm">Total Gaji Bulanan</p>
                         <p class="text-2xl font-bold text-gray-800">
-                            Rp <?= number_format(array_sum(array_column($karyawan, 'gaji')), 0, ',', '.') ?>
+                            Rp <?= isset($karyawanModel) ?
+                                    number_format($karyawanModel->getTotalSalary(), 0, ',', '.') :
+                                    number_format(array_sum(array_column($karyawan, 'gaji')), 0, ',', '.') ?>
                         </p>
                     </div>
                 </div>
@@ -68,7 +70,9 @@
                     <div>
                         <p class="text-gray-600 text-sm">Rata-rata Gaji</p>
                         <p class="text-2xl font-bold text-gray-800">
-                            Rp <?= number_format(array_sum(array_column($karyawan, 'gaji')) / count($karyawan), 0, ',', '.') ?>
+                            Rp <?= isset($karyawanModel) ?
+                                    number_format($karyawanModel->getAverageSalary(), 0, ',', '.') :
+                                    number_format(array_sum(array_column($karyawan, 'gaji')) / count($karyawan), 0, ',', '.') ?>
                         </p>
                     </div>
                 </div>
@@ -145,14 +149,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="<?= url('/?url=karyawan&action=edit&id=' . $k['id']) ?>"
-                                            class="joko-btn joko-btn-warning joko-btn-sm inline-flex items-center text-green-600 hover:text-green-800 font-bold">
+                                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center text-sm">
                                             <i class="bi bi-pencil mr-1"></i>
                                             Edit
                                         </a>
                                         <a href="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
                                             data-confirm-delete
                                             data-item-name="<?= htmlspecialchars($k['nama']) ?>"
-                                            class="text-red-600 hover:text-red-800 font-bold">
+                                            class="bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center text-sm">
                                             <i class="bi bi-trash mr-1"></i>
                                             Hapus
                                         </a>
@@ -163,4 +167,97 @@
                     </tbody>
                 </table>
             </div>
-        <?php endif;
+
+            <!-- Table Footer with Pagination -->
+            <?php if (isset($totalPages) && $totalPages > 0): ?>
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="text-sm text-gray-600 mb-2 md:mb-0">
+                            <i class="bi bi-info-circle mr-1"></i>
+                            Menampilkan
+                            <span class="font-bold">
+                                <?php
+                                if (isset($currentPage) && isset($perPage) && isset($totalItems)) {
+                                    $start = ($currentPage - 1) * $perPage + 1;
+                                    $end = min($currentPage * $perPage, $totalItems);
+                                    echo $start . ' - ' . $end;
+                                } else {
+                                    echo '1 - ' . count($karyawan);
+                                }
+                                ?>
+                            </span>
+                            dari <span class="font-bold"><?= $totalItems ?? count($karyawan) ?></span> data karyawan
+                        </div>
+
+                        <!-- Pagination Controls -->
+                        <?php if (isset($totalPages) && $totalPages > 1): ?>
+                            <div class="flex items-center space-x-1">
+                                <!-- Previous Button -->
+                                <a href="?url=karyawan&page=<?= max(1, $currentPage - 1) ?>"
+                                    class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 <?= $currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' ?>"
+                                    <?= $currentPage == 1 ? 'onclick="return false;"' : '' ?>>
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+
+                                <!-- Page Numbers -->
+                                <?php
+                                // Calculate page range to show
+                                $startPage = max(1, $currentPage - 2);
+                                $endPage = min($totalPages, $currentPage + 2);
+
+                                // Show first page if not in range
+                                if ($startPage > 1): ?>
+                                    <a href="?url=karyawan&page=1"
+                                        class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
+                                        1
+                                    </a>
+                                    <?php if ($startPage > 2): ?>
+                                        <span class="px-2 text-gray-400">...</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <!-- Page numbers in range -->
+                                <?php for ($page = $startPage; $page <= $endPage; $page++): ?>
+                                    <a href="?url=karyawan&page=<?= $page ?>"
+                                        class="px-3 py-1.5 rounded-lg border transition-colors duration-200 font-medium
+                                    <?= $page == $currentPage
+                                        ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400' ?>">
+                                        <?= $page ?>
+                                    </a>
+                                <?php endfor; ?>
+
+                                <!-- Show last page if not in range -->
+                                <?php if ($endPage < $totalPages): ?>
+                                    <?php if ($endPage < $totalPages - 1): ?>
+                                        <span class="px-2 text-gray-400">...</span>
+                                    <?php endif; ?>
+                                    <a href="?url=karyawan&page=<?= $totalPages ?>"
+                                        class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
+                                        <?= $totalPages ?>
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Next Button -->
+                                <a href="?url=karyawan&page=<?= min($totalPages, $currentPage + 1) ?>"
+                                    class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 <?= $currentPage == $totalPages ? 'opacity-50 cursor-not-allowed' : '' ?>"
+                                    <?= $currentPage == $totalPages ? 'onclick="return false;"' : '' ?>>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="text-sm text-gray-600 mt-2 md:mt-0">
+                            <span class="font-semibold">Total Gaji Bulanan:</span>
+                            <span class="font-bold text-green-600 ml-2">
+                                Rp <?= isset($karyawanModel) ?
+                                        number_format($karyawanModel->getTotalSalary(), 0, ',', '.') :
+                                        number_format(array_sum(array_column($karyawan, 'gaji')), 0, ',', '.') ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>

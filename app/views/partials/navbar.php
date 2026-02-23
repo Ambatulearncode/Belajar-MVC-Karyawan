@@ -196,11 +196,14 @@
         const mobileMenu = document.getElementById('mobile-menu');
 
         if (mobileMenuButton && mobileMenu) {
-            mobileMenuButton.addEventListener('click', function() {
-                // Toggle menu visibility
+            mobileMenuButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Toggle class hidden
                 mobileMenu.classList.toggle('hidden');
 
-                // Change icon
+                // Ganti icon
                 const icon = mobileMenuButton.querySelector('i');
                 if (mobileMenu.classList.contains('hidden')) {
                     icon.classList.remove('bi-x');
@@ -210,29 +213,6 @@
                     icon.classList.add('bi-x');
                 }
             });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
-                    mobileMenu.classList.add('hidden');
-                    const icon = mobileMenuButton.querySelector('i');
-                    icon.classList.remove('bi-x');
-                    icon.classList.add('bi-list');
-                }
-            });
-
-            // Close menu on window resize (if resized to desktop)
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) { // md breakpoint
-                    mobileMenu.classList.add('hidden');
-                    const icon = mobileMenuButton.querySelector('i');
-                    icon.classList.remove('bi-x');
-                    icon.classList.add('bi-list');
-                }
-            });
         }
     });
 </script>
-
-<!-- Optional: Add Bootstrap Icons if not already included -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

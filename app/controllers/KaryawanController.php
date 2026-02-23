@@ -18,19 +18,28 @@ class KaryawanController extends Controller
 
     public function index(): void
     {
-        try {
-            $karyawan = $this->karyawanModel->getAllKaryawan();
-            $this->view('karyawan/index', [
-                'karyawan' => $karyawan,
-                'judul' => 'Daftar Karyawan',
-                'user' => Auth::user()
-            ]);
-        } catch (\Exception $e) {
-            // Redirect dengan error message
-            $_SESSION['error'] = 'Gagal mengambil data karyawan: ' . $e->getMessage();
-            header('Location: index.php?url=karyawan');
-            exit;
+        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $perPage = 10;
+
+        if ($currentPage < 1) {
+            $currentPage = 1;
         }
+
+        $karyawan = $this->karyawanModel->getPaginated($currentPage, $perPage);
+        $totalItems = $this->karyawanModel->getTotalCount();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $data = [
+            'judul' => 'Daftar Karyawan',
+            'karyawan' => $karyawan,
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'perPage' => $perPage,
+            'karyawanModel' => $this->karyawanModel
+        ];
+
+        $this->view('karyawan/index', $data);
     }
 
     public function create(): void
