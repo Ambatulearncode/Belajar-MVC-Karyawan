@@ -79,29 +79,136 @@
             </div>
         </div>
 
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Search Form -->
+                <div class="flex-1">
+                    <form method="GET" action="" class="flex gap-2">
+                        <input type="hidden" name="url" value="karyawan">
+                        <input type="hidden" name="page" value="1">
+
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="bi bi-search text-gray-400"></i>
+                            </div>
+                            <input type="text"
+                                name="search"
+                                value="<?= htmlspecialchars($search ?? '') ?>"
+                                placeholder="Cari nama atau NIK..."
+                                class="pl-10 pr-4 py-2.5 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition">
+                        </div>
+
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium inline-flex items-center transition">
+                            <i class="bi bi-search mr-2"></i>
+                            Cari
+                        </button>
+
+                        <?php if (!empty($search) || !empty($selectedJabatan)): ?>
+                            <a href="?url=karyawan&page=1"
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium inline-flex items-center transition">
+                                <i class="bi bi-x-circle mr-2"></i>
+                                Reset
+                            </a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
+                <!-- Filter by Jabatan -->
+                <div class="md:w-64">
+                    <form method="GET" action="" class="flex gap-2">
+                        <input type="hidden" name="url" value="karyawan">
+                        <input type="hidden" name="page" value="1">
+                        <?php if (!empty($search)): ?>
+                            <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                        <?php endif; ?>
+
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="bi bi-filter text-gray-400"></i>
+                            </div>
+                            <select name="jabatan"
+                                onchange="this.form.submit()"
+                                class="pl-10 pr-4 py-2.5 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none appearance-none bg-white cursor-pointer transition">
+                                <option value="all" <?= empty($selectedJabatan) || $selectedJabatan === 'all' ? 'selected' : '' ?>>Semua Jabatan</option>
+                                <?php foreach ($allJabatans as $j): ?>
+                                    <option value="<?= htmlspecialchars($j) ?>"
+                                        <?= $selectedJabatan === $j ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($j) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="bi bi-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Active Filters Badges -->
+            <?php if (!empty($search) || (!empty($selectedJabatan) && $selectedJabatan !== 'all')): ?>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Filter aktif:</span>
+                        <?php if (!empty($search)): ?>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                                <i class="bi bi-search mr-1"></i>
+                                "<?= htmlspecialchars($search) ?>"
+                                <a href="?url=karyawan&page=1&jabatan=<?= urlencode($selectedJabatan ?? 'all') ?>"
+                                    class="ml-2 text-blue-600 hover:text-blue-800">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($selectedJabatan) && $selectedJabatan !== 'all'): ?>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                                <i class="bi bi-briefcase mr-1"></i>
+                                <?= htmlspecialchars($selectedJabatan) ?>
+                                <a href="?url=karyawan&page=1&search=<?= urlencode($search ?? '') ?>"
+                                    class="ml-2 text-purple-600 hover:text-purple-800">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($search) || (!empty($selectedJabatan) && $selectedJabatan !== 'all')): ?>
+                            <a href="?url=karyawan&page=1"
+                                class="text-sm text-gray-600 hover:text-gray-800 ml-2 inline-flex items-center">
+                                <i class="bi bi-x-circle mr-1"></i>
+                                Hapus semua filter
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <!-- Data Table -->
         <div class="bg-white rounded-xl card-shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 table-zebra">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-blue-50 border-b-2 border-blue-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-hash mr-1"></i> NIK
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-hash mr-1.5 text-blue-600"></i> NIK
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-person mr-1"></i> Nama
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-person mr-1.5 text-blue-600"></i> Nama
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-briefcase mr-1"></i> Jabatan
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-briefcase mr-1.5 text-blue-600"></i> Jabatan
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-cash-coin mr-1"></i> Gaji
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-cash-coin mr-1.5 text-blue-600"></i> Gaji
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-calendar3 mr-1"></i> Tanggal Masuk
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-calendar3 mr-1.5 text-blue-600"></i> Tanggal Masuk
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="bi bi-gear mr-1"></i> Aksi
+                            <th class="px-4 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                <i class="bi bi-gear mr-1.5 text-blue-600"></i> Aksi
                             </th>
                         </tr>
                     </thead>

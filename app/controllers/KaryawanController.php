@@ -18,6 +18,14 @@ class KaryawanController extends Controller
 
     public function index(): void
     {
+        if (!Auth::isAdmin()) {
+            header("Location: index.php?url=auth&action=unauthorized");
+            exit;
+        }
+
+        $search = $_GET['search'] ?? null;
+        $jabatan = $_GET['jabatan'] ?? null;
+
         $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $perPage = 10;
 
@@ -25,9 +33,11 @@ class KaryawanController extends Controller
             $currentPage = 1;
         }
 
-        $karyawan = $this->karyawanModel->getPaginated($currentPage, $perPage);
-        $totalItems = $this->karyawanModel->getTotalCount();
+        $karyawan = $this->karyawanModel->getPaginatedWithFilter($currentPage, $perPage, $search, $jabatan);
+        $totalItems = $this->karyawanModel->getTotalCountWithFilter($search, $jabatan);
         $totalPages = ceil($totalItems / $perPage);
+
+        $allJabatans = $this->karyawanModel->getAllJabatan();
 
         $data = [
             'judul' => 'Daftar Karyawan',
@@ -36,7 +46,10 @@ class KaryawanController extends Controller
             'totalPages' => $totalPages,
             'totalItems' => $totalItems,
             'perPage' => $perPage,
-            'karyawanModel' => $this->karyawanModel
+            'karyawanModel' => $this->karyawanModel,
+            'search' => $search,
+            'selectedJabatan' => $jabatan,
+            'allJabatans' => $allJabatans
         ];
 
         $this->view('karyawan/index', $data);

@@ -5,6 +5,7 @@ namespace App\Models;
 use Core\Database;
 use PDO;
 use PDOException;
+use PDOStatement;
 
 class KaryawanModel
 {
@@ -34,6 +35,26 @@ class KaryawanModel
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error getAllKaryawan " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getAllJabatan(): array
+    {
+        try {
+            $query = "SELECT DISTINCT jabatan FROM karyawan ORDER BY jabatan";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $jabatans = [];
+            foreach ($result as $row) {
+                $jabatans[] = $row['jabatan'];
+            }
+            return $jabatans;
+        } catch (PDOException $e) {
+            error_log("Error getAllJabatan " . $e->getMessage());
             return [];
         }
     }
@@ -161,6 +182,41 @@ class KaryawanModel
         }
     }
 
+    public function getPaginatedWithFilter(int $page = 1, int $perPage, ?string $search = null, ?string $jabatan = null): array
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+
+            $query = "SELECT * FROM karyawan WHERE 1=1";
+            $params = [];
+
+            if (!empty($search)) {
+                $query .= " AND (nama LIKE :search OR nik LIKE :search)";
+                $params[':search'] = "%$search%";
+            }
+
+            if (!empty($jabatan) && $jabatan !== 'all') {
+                $query .= " AND jabatan = :jabatan";
+                $params[":jabatan"] = $jabatan;
+            }
+            $query .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
+            $stmt = $this->db->prepare($query);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getPaginatedWithFilter " . $e->getMessage());
+            return [];
+        }
+    }
+
     public function getTotalCount(): int
     {
         try {
@@ -172,6 +228,38 @@ class KaryawanModel
             return (int) ($result['total'] ?? 0);
         } catch (PDOException $e) {
             error_log("Error getTotalCount " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getTotalCountWithFilter(?string $search = null, ?string $jabatan = null): int
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM karyawan WHERE 1=1";
+            $params = [];
+
+            if (!empty($search)) {
+                $sql .= " AND (nama LIKE :search OR nik LIKE :search)";
+                $params[':search'] = "%$search%";
+            }
+
+            if (!empty($jabatan) && $jabatan !== 'all') {
+                $sql .= " AND jabatan = :jabatan";
+                $params[':jabatan'] = $jabatan;
+            }
+
+            $stmt = $this->db->prepare($sql);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (int) ($result['total'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Error getTotalCountWithFilter " . $e->getMessage());
             return 0;
         }
     }
