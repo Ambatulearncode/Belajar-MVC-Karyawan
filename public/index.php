@@ -113,6 +113,13 @@ switch ($url) {
                     $controller->index();
                 }
                 break;
+            case 'update':
+                if ($id) {
+                    $controller->update((int)$id);
+                } else {
+                    $controller->index();
+                }
+                break;
             case 'delete':
                 if ($id) {
                     $controller->delete((int)$id);

@@ -5,6 +5,7 @@ namespace App\Controllers;  // Perbaiki namespace (pake 'Controllers' huruf besa
 use App\Models\UserModel;
 use Core\Controller;
 use Core\Auth;
+use PDOException;
 
 class AdminController extends Controller
 {
@@ -118,18 +119,33 @@ class AdminController extends Controller
     public function edit(int $id): void
     {
         try {
-            $admins = $this->userModel->getUserById($id);
+            if (!Auth::isSuperAdmin()) {
+                header('Location: index.php?url=auth&action=unauthorized');
+                exit;
+            }
 
-            if (!$admins) {
-                $_SESSION['error'] = 'Data user tidak ditemukan';
+            $id = $_GET['id'] ?? 0;
+
+            if (!$id) {
+                $_SESSION['error'] = 'ID admin tidak valid!';
                 header('Location: index.php?url=admin');
                 exit;
             }
 
-            $this->view('admin/edit', [
-                'admin' => $admins,
-                'judul' => 'Edit Admins'
-            ]);
+            $admin = $this->userModel->getUserById($id);
+
+            if (!$admin) {
+                $_SESSION['error'] = 'Admin tidak ditemukan!';
+                header('Location: index.php?url=admin');
+                exit;
+            }
+
+            $data = [
+                'judul' => 'Edit Admin',
+                'admin' => $admin
+            ];
+
+            $this->view('admin/edit', $data);
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Gagal mengambil data: ' . $e->getMessage();
             header('Location: index.php?url=admin');
@@ -146,6 +162,101 @@ class AdminController extends Controller
             exit;
         } catch (\Exception $e) {
             $_SESSION['error'] = 'Gagal menghapus data: ' . $e->getMessage();
+            header('Location: index.php?url=admin');
+            exit;
+        }
+    }
+
+    public function update(int $id): void
+    {
+        if (!Auth::isSuperAdmin()) {
+            header('Location: index.php?url=auth&action=unauthorized');
+            exit;
+        }
+
+        $admin = $this->userModel->getUserById($id);
+
+        if ($admin['username'] === 'admin' && $admin['role'] === 'superadmin') {
+            $_SESSION['error'] = 'Superadmin tidak dapat diedit!';
+            header('Location: index.php?url=admin');
+            exit;
+        }
+
+        $errors = [];
+
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $role = trim($_POST['role'] ?? 'admin');
+        $password = $_POST['password'] ?? '';
+        $password_confirmation = $_POST['password_confirmation'] ?? '';
+
+        $existingUser = $this->userModel->findByUsername($username);
+        if ($existingUser && $existingUser['id'] != $id) {
+            $errors['username'] = 'Username sudah digunakan!';
+        }
+
+        $existingEmail = $this->userModel->findByEmail($email);
+        if ($existingEmail && $existingEmail['id'] != $id) {
+            $errors['email'] = 'Email sudah digunakan!';
+        }
+
+        if (!empty($password)) {
+            if (strlen($password) < 6) {
+                $errors['password'] = 'Password minimal 6 karakter!';
+            }
+
+            if ($password !== $password_confirmation) {
+                $errors['password_confirmation'] = 'Password tidak cocok!';
+            }
+        }
+
+        if (empty($username)) {
+            $errors['username'] = 'Username harus diisi!';
+        }
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Email tidak valid!';
+        }
+
+        $allowedRoles = ['admin', 'user'];
+        if (!in_array($role, $allowedRoles)) {
+            $errors['role'] = 'Role tidak valid!';
+        }
+
+        // If there are errors, redirect back with errors
+        if (!empty($errors)) {
+            $_SESSION['errors'] = $errors;
+            $_SESSION['old'] = [
+                'username' => $username,
+                'email' => $email,
+                'role' => $role
+            ];
+            header('Location: index.php?url=admin&action=edit&id=' . $id);
+            exit;
+        }
+
+        $updatedData = [
+            'username' => $username,
+            'email' => $email,
+            'role' => $role
+        ];
+
+        $success = false;
+        if (!empty($password)) {
+            $success = $this->userModel->updatePassword($id, $password);
+            if ($success) {
+                $success = $this->userModel->update($id, $updatedData);
+            }
+        } else {
+            $success = $this->userModel->update($id, $updatedData);
+        }
+
+        if ($success) {
+            $_SESSION['success'] = 'Data admin berhasil diperbarui!';
+            header('Location: index.php?url=admin');
+            exit;
+        } else {
+            $_SESSION['error'] = 'Gagal memperbarui data admin!';
             header('Location: index.php?url=admin');
             exit;
         }
