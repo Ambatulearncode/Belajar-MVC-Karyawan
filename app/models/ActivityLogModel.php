@@ -131,7 +131,7 @@ class ActivityLogModel
     public function getStatistics(): array
     {
         try {
-            $query = "SELECT action,COUNT(*) as total FROM activity_logs WHERE crated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP by action";
+            $query = "SELECT action,COUNT(*) as total FROM activity_logs WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP by action";
 
             $stmt = $this->db->prepare($query);
             $stmt->execute();
@@ -201,7 +201,7 @@ class ActivityLogModel
 
             $stmt = $this->db->prepare($query);
             $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return (int)($result['total'] ?? 0);
         } catch (PDOException $e) {
@@ -210,12 +210,21 @@ class ActivityLogModel
         }
     }
 
-    public function getActiveUsersCount(): int
+    public function getActiveUsersCount(int $days = 30): int
     {
         try {
-            $query = "SELECT COUNT (DISTINCT user_id) as total FROM activity_logs WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+            if ($days > 0) {
+                $query = "SELECT COUNT(DISTINCT user_id) as total 
+                FROM activity_logs 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)";
+                $stmt = $this->db->prepare($query);
+                $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+            } else {
+                // Kalo days = 0, hitung semua
+                $query = "SELECT COUNT(DISTINCT user_id) as total FROM activity_logs";
+                $stmt = $this->db->prepare($query);
+            }
 
-            $stmt = $this->db->prepare($query);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 

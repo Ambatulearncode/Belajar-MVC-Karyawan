@@ -35,7 +35,7 @@ class ActivityLogController extends Controller
         $recentActivities = $this->activityLogModel->getRecent(5);
         $statistics = $this->activityLogModel->getStatistics();
         $todayCount = $this->activityLogModel->getTodayCount();
-        $activeUserCount = $this->activityLogModel->getActiveUsersCount();
+        $activeUserCount = $this->activityLogModel->getActiveUsersCount(0);
 
         $data = [
             'judul' => 'Activity Log',
