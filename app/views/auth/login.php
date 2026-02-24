@@ -8,48 +8,40 @@
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
                 Login ke Sistem Karyawan
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
+            <p class="mt-2 text-center text-m text-gray-600">
                 Hanya admin yang dapat mengakses dashboard
             </p>
         </div>
 
-        <!-- Error Messages -->
-        <?php if (!empty($errors)): ?>
-            <div class="joko-alert joko-alert-danger">
-                <div class="flex items-start">
-                    <i class="bi bi-exclamation-triangle text-xl mr-3 mt-0.5"></i>
-                    <div>
-                        <h4 class="font-bold mb-2">Login Gagal</h4>
-                        <ul class="list-disc pl-5 space-y-1">
-                            <?php foreach ($errors as $error): ?>
-                                <li><?= htmlspecialchars($error) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
 
         <!-- Login Form -->
         <form class="mt-8 space-y-6" method="POST" action="index.php?url=auth&action=authenticate">
-            <div class="rounded-md shadow-sm -space-y-px">
-                <!-- Username/Email -->
-                <div>
-                    <label for="username" class="sr-only">Username atau Email</label>
-                    <input id="username" name="username" type="text"
-                        value="<?= isset($old['username']) ? htmlspecialchars($old['username']) : '' ?>"
-                        required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Username atau Email">
+            <div class="rounded-md shadow-sm">
+                <div class="mb-4">
+                    <input type="text"
+                        id="username"
+                        name="username"
+                        value="<?= htmlspecialchars($_SESSION['old']['identifier'] ?? '') ?>"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
+                        placeholder="Masukkan username atau email"
+                        required>
                 </div>
 
-                <!-- Password -->
+                <!-- Password Field -->
                 <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password"
-                        required
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                        placeholder="Password">
+                    <div class="relative">
+                        <input type="password"
+                            id="password"
+                            name="password"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition pr-10"
+                            placeholder="Masukkan password"
+                            required>
+                        <button type="button"
+                            onclick="togglePassword()"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="bi bi-eye" id="password-toggle-icon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -83,3 +75,21 @@
         </form>
     </div>
 </div>
+
+<!-- Password Toggle Script -->
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const icon = document.getElementById('password-toggle-icon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+</script>

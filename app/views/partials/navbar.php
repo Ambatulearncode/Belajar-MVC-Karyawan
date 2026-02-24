@@ -48,6 +48,10 @@
                                 class="px-3 py-2 rounded-lg <?= ($_GET['url'] ?? '') == 'admin' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition text-sm">
                                 <i class="bi bi-person-badge mr-1"></i> <span class="hidden lg:inline">Admin</span>
                             </a>
+                            <a href="index.php?url=activity-log"
+                                class="px-3 py-2 rounded-lg <?= ($_GET['url'] ?? '') == 'activity-log' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition text-sm">
+                                <i class="bi bi-activity mr-1"></i> <span class="hidden lg:inline">Activity Log</span>
+                            </a>
                             <!-- Menu untuk Admin biasa (role 'admin') -->
                         <?php elseif ($_SESSION['user']['role'] === 'admin'): ?>
                             <a href="index.php?url=karyawan"

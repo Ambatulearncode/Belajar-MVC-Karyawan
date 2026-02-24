@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../utils/helpers.php';
+require_once __DIR__ . '/../utils/loggingHelper.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -11,6 +12,7 @@ $url = $_GET['url'] ?? 'auth';
 $action = $_GET['action'] ?? 'login';
 $id = $_GET['id'] ?? null;
 
+use App\controllers\ActivityLogController;
 use Core\Auth;
 
 switch ($url) {
@@ -133,6 +135,28 @@ switch ($url) {
                 break;
         }
         break;
+
+    case "activity-log":
+        if (!Auth::isSuperAdmin()) {
+            header('Location: index.php?url=auth&action=unauthorized');
+            exit;
+        }
+
+        $controller = new ActivityLogController();
+
+        switch ($action) {
+            case 'index':
+                $controller->index();
+                break;
+            case 'clear':
+                $controller->clear();
+                break;
+            default:
+                $controller->index();
+                exit;
+                break;
+        }
+
 
     default:
         http_response_code(404);

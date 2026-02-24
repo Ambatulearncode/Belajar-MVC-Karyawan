@@ -133,10 +133,12 @@ class KaryawanController extends Controller
                 'tanggal_masuk' => $tanggal_masuk
             ];
 
-            $this->karyawanModel->create($data);
-            $_SESSION['success'] = 'Data karyawan berhasil ditambahkan!';
-            header('Location: index.php?url=karyawan');
-            exit;
+            if ($this->karyawanModel->create($data)) {
+                log_activity('create', 'Menambahkan karyawan baru: ' . $data['nama']);
+                $_SESSION['success'] = 'Data karyawan berhasil ditambahkan!';
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
         } catch (\Exception $e) {
             // Redirect dengan error message
             $_SESSION['error'] = 'Gagal menyimpan data: ' . $e->getMessage();
@@ -248,16 +250,47 @@ class KaryawanController extends Controller
 
         // ? Jika validasi sukses, update data
         try {
-            $data = [
+            $karyawanLama = $this->karyawanModel->getKaryawanById($id);
+
+            if (!$karyawanLama) {
+                $_SESSION['error'] = 'Data karyawan tidak ditemukan!';
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
+
+            $dataBaru = [
                 'nama' => $nama,
                 'jabatan' => $jabatan,
                 'gaji' => (float) $gaji,
                 'tanggal_masuk' => $tanggal_masuk
             ];
 
-            $result = $this->karyawanModel->update($id, $data);
+            $result = $this->karyawanModel->update($id, $dataBaru);
 
             if ($result) {
+                $changes = [];
+                if ($karyawanLama['nama'] !== $dataBaru['nama']) {
+                    $changes[] = "nama: '{$karyawanLama['nama']}' → '{$dataBaru['nama']}'";
+                }
+                if ($karyawanLama['jabatan'] !== $dataBaru['jabatan']) {
+                    $changes[] = "jabatan: '{$karyawanLama['jabatan']}' → '{$dataBaru['jabatan']}'";
+                }
+                if ($karyawanLama['gaji'] != $dataBaru['gaji']) { // pake != biar tipe data beda tetep kecek
+                    $changes[] = "gaji: Rp " . number_format($karyawanLama['gaji'], 0, ',', '.') .
+                        " → Rp " . number_format($dataBaru['gaji'], 0, ',', '.');
+                }
+                if ($karyawanLama['tanggal_masuk'] !== $dataBaru['tanggal_masuk']) {
+                    $changes[] = "tanggal masuk: '{$karyawanLama['tanggal_masuk']}' → '{$dataBaru['tanggal_masuk']}'";
+                }
+
+                if (!empty($changes)) {
+                    $description = "Mengubah data karyawan {$karyawanLama['nama']} (NIK: {$karyawanLama['nik']}): " . implode(', ', $changes);
+                } else {
+                    $description = "Mengubah data karyawan {$karyawanLama['nama']} (NIK: {$karyawanLama['nik']}) - Tidak ada perubahan";
+                }
+
+                log_activity('update', $description);
+
                 $_SESSION['success'] = 'Data karyawan berhasil diperbarui!';
                 header('Location: index.php?url=karyawan');
                 exit;
@@ -276,10 +309,27 @@ class KaryawanController extends Controller
     public function delete(int $id): void
     {
         try {
-            $this->karyawanModel->delete($id);
-            $_SESSION['success'] = 'Data karyawan berhasil dihapus!';
-            header('Location: index.php?url=karyawan');
-            exit;
+            $karyawan = $this->karyawanModel->getKaryawanById($id);
+
+            if (!$karyawan) {
+                $_SESSION['error'] = 'Data karyawan tidak ditemukan!';
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
+
+            $namaKaryawan = $karyawan['nama'];
+            $nikKaryawan = $karyawan['nik'];
+
+            if ($this->karyawanModel->delete($id)) {
+                log_activity(
+                    'delete',
+                    "Menghapus data karyawan: {$namaKaryawan} dengan nik: {$nikKaryawan})"
+                );
+
+                $_SESSION['success'] = "Data karyawan {$namaKaryawan} berhasil dihapus!";
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
         } catch (\Exception $e) {
             // Redirect dengan error message
             $_SESSION['error'] = 'Gagal menghapus data: ' . $e->getMessage();

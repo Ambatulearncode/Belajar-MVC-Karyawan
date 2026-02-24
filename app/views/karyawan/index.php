@@ -300,7 +300,7 @@
                         <?php if (isset($totalPages) && $totalPages > 1): ?>
                             <div class="flex items-center space-x-1">
                                 <!-- Previous Button -->
-                                <a href="?url=karyawan&page=<?= max(1, $currentPage - 1) ?>"
+                                <a href="?url=karyawan&page=<?= max(1, $currentPage - 1) ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= !empty($selectedJabatan) && $selectedJabatan !== 'all' ? '&jabatan=' . urlencode($selectedJabatan) : '' ?>"
                                     class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 <?= $currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' ?>"
                                     <?= $currentPage == 1 ? 'onclick="return false;"' : '' ?>>
                                     <i class="bi bi-chevron-left"></i>
@@ -314,7 +314,7 @@
 
                                 // Show first page if not in range
                                 if ($startPage > 1): ?>
-                                    <a href="?url=karyawan&page=1"
+                                    <a href="?url=karyawan&page=1<?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= !empty($selectedJabatan) && $selectedJabatan !== 'all' ? '&jabatan=' . urlencode($selectedJabatan) : '' ?>"
                                         class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
                                         1
                                     </a>
@@ -325,7 +325,7 @@
 
                                 <!-- Page numbers in range -->
                                 <?php for ($page = $startPage; $page <= $endPage; $page++): ?>
-                                    <a href="?url=karyawan&page=<?= $page ?>"
+                                    <a href="?url=karyawan&page=<?= $page ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= !empty($selectedJabatan) && $selectedJabatan !== 'all' ? '&jabatan=' . urlencode($selectedJabatan) : '' ?>"
                                         class="px-3 py-1.5 rounded-lg border transition-colors duration-200 font-medium
                                     <?= $page == $currentPage
                                         ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700'
@@ -339,14 +339,14 @@
                                     <?php if ($endPage < $totalPages - 1): ?>
                                         <span class="px-2 text-gray-400">...</span>
                                     <?php endif; ?>
-                                    <a href="?url=karyawan&page=<?= $totalPages ?>"
+                                    <a href="?url=karyawan&page=<?= $totalPages ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= !empty($selectedJabatan) && $selectedJabatan !== 'all' ? '&jabatan=' . urlencode($selectedJabatan) : '' ?>"
                                         class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
                                         <?= $totalPages ?>
                                     </a>
                                 <?php endif; ?>
 
                                 <!-- Next Button -->
-                                <a href="?url=karyawan&page=<?= min($totalPages, $currentPage + 1) ?>"
+                                <a href="?url=karyawan&page=<?= min($totalPages, $currentPage + 1) ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= !empty($selectedJabatan) && $selectedJabatan !== 'all' ? '&jabatan=' . urlencode($selectedJabatan) : '' ?>"
                                     class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 <?= $currentPage == $totalPages ? 'opacity-50 cursor-not-allowed' : '' ?>"
                                     <?= $currentPage == $totalPages ? 'onclick="return false;"' : '' ?>>
                                     <i class="bi bi-chevron-right"></i>

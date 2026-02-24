@@ -62,20 +62,24 @@ class AuthController extends Controller
                 // Login berhasil
                 Auth::login($user);
 
+                // Log activity
+                log_activity('login', 'User : ' . $_SESSION['user']['username'] . ' login');;
+
                 // Redirect berdasarkan role
                 $this->redirectBasedOnRole();
                 exit;
             } else {
                 $errors[] = 'Username/email atau password salah';
+
+                log_activity('error', 'Percobaan login gagal untuk: ' . $identifier);
             }
         }
 
-        // Jika ada error, tampilkan form kembali
-        $this->view('auth/login', [
-            'judul' => 'Login Admin',
-            'errors' => $errors,
-            'old' => ['username' => $identifier]
-        ]);
+        if (!empty($errors)) {
+            $_SESSION['error'] = implode(', ', $errors);
+            $_SESSION['old'] = ['username' => $identifier];
+        }
+        header('Location: index.php?url=auth&action=login');
     }
 
     private function redirectBasedOnRole(): void
@@ -101,6 +105,10 @@ class AuthController extends Controller
      */
     public function logout(): void
     {
+        if (isset($_SESSION['user'])) {
+            log_activity('logout', 'User : ' . $_SESSION['user']['username'] . ' logout');
+        }
+
         Auth::logout();
         header('Location: index.php?url=auth&action=login');
         exit;
