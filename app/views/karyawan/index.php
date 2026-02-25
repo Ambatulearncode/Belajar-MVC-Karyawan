@@ -11,8 +11,12 @@
             Tambah Karyawan
         </a>
     </div>
-
-    <?php if (empty($karyawan)): ?>
+    <?php
+    // CEK KONDISI
+    $databaseKosong = ($totalSemuaKaryawan == 0); // Emang gak ada data sama sekali
+    $pencarianKosong = (empty($karyawan) && $totalSemuaKaryawan > 0); // Pencarian gak ketemu
+    ?>
+    <?php if ($databaseKosong) : ?>
         <!-- Empty State -->
         <div class="bg-blue-50 border border-blue-200 p-8 text-center rounded-xl shadow-lg">
             <div class="mb-6">
@@ -28,7 +32,42 @@
                 </a>
             </div>
         </div>
+
+    <?php elseif ($pencarianKosong): ?>
+        <!-- KONDISI 2: PENCARIAN TIDAK DITEMUKAN -->
+        <div class="bg-blue-50 border border-blue-200 p-8 text-center rounded-xl shadow-lg">
+            <div class="mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                    <i class="bi bi-search text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2 text-gray-800">Data Tidak Ditemukan</h3>
+                <p class="text-gray-600 mb-4">
+                    Pencarian untuk
+                    <span class="font-semibold text-blue-700">"<?= htmlspecialchars($search ?? '') ?>"</span>
+                    <?php if (!empty($selectedJabatan) && $selectedJabatan !== 'all'): ?>
+                        dengan jabatan
+                        <span class="font-semibold text-blue-700">"<?= htmlspecialchars($selectedJabatan) ?>"</span>
+                    <?php endif; ?>
+                    tidak ditemukan.
+                </p>
+                <!-- Tombol Reset Filter -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="?url=karyawan&page=1"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow inline-flex items-center justify-center">
+                        <i class="bi bi-arrow-repeat mr-2"></i>
+                        Reset Semua Filter
+                    </a>
+                    <a href="<?= url('/?url=karyawan&action=create') ?>"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow inline-flex items-center justify-center">
+                        <i class="bi bi-plus-lg mr-2"></i>
+                        Tambah Karyawan Baru
+                    </a>
+                </div>
+            </div>
+        </div>
     <?php else: ?>
+
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Total Karyawan -->

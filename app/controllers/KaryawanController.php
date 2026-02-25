@@ -34,8 +34,9 @@ class KaryawanController extends Controller
         }
 
         $karyawan = $this->karyawanModel->getPaginatedWithFilter($currentPage, $perPage, $search, $jabatan);
-        $totalItems = $this->karyawanModel->getTotalCountWithFilter($search, $jabatan);
-        $totalPages = ceil($totalItems / $perPage);
+        $totalSemuaKaryawan = $this->karyawanModel->getTotalCount();
+        $totalHasilFilter = $this->karyawanModel->getTotalCountWithFilter($search, $jabatan);
+        $totalPages = ceil($totalHasilFilter / $perPage);
 
         $allJabatans = $this->karyawanModel->getAllJabatan();
 
@@ -44,7 +45,8 @@ class KaryawanController extends Controller
             'karyawan' => $karyawan,
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
-            'totalItems' => $totalItems,
+            'totalItems' => $totalHasilFilter,
+            'totalSemuaKaryawan' => $totalSemuaKaryawan,
             'perPage' => $perPage,
             'karyawanModel' => $this->karyawanModel,
             'search' => $search,

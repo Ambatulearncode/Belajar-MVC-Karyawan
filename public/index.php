@@ -160,6 +160,7 @@ switch ($url) {
 
     default:
         http_response_code(404);
-        echo "404 - Halaman tidak ditemukan";
+        $data['judul'] = '404 - Halaman Tidak Ditemukan';
+        require_once __DIR__ . '/../app/views/errors/404.php';
         break;
 }

@@ -23,7 +23,7 @@ class ActivityLogController extends Controller
     public function index(): void
     {
         $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $perPage = 20;
+        $perPage = 10;
 
         if ($currentPage < 1) {
             $currentPage = 1;

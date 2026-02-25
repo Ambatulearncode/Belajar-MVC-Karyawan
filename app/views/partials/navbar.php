@@ -137,6 +137,11 @@
                             <i class="bi bi-person-plus-fill mr-3"></i>
                             Tambah Admin Baru
                         </a>
+                        <a href="index.php?url=activity-log"
+                            class="flex items-center px-4 py-3 rounded-lg <?= ($_GET['url'] ?? '') == 'activity-log' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition">
+                            <i class="bi bi-activity mr-1"></i>
+                            Activity Log
+                        </a>
 
                         <!-- Menu untuk Admin biasa -->
                     <?php elseif ($_SESSION['user']['role'] === 'admin'): ?>

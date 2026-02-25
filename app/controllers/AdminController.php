@@ -96,10 +96,9 @@ class AdminController extends Controller
             ];
 
             if ($this->userModel->create($data)) {
+                log_activity('create', 'Menambahkan admin baru: ' . $data['username']);
                 $_SESSION['success'] = 'Admin baru berhasil ditambahkan!';
-
                 error_log("Super Admin " . Auth::user()['username'] . " menambahkan admin baru: $username");
-
                 header('Location: index.php?url=admin&action=index'); // Ke daftar admin, bukan karyawan
                 exit;
             } else {
@@ -157,6 +156,7 @@ class AdminController extends Controller
     {
         try {
             $this->userModel->delete($id);
+            log_activity('delete', 'Menghapus data admin');
             $_SESSION['success'] = 'Data Admin berhasil di hapus!';
             header('Location: index.php?url=admin');
             exit;
