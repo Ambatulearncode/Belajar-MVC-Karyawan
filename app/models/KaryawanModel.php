@@ -5,7 +5,6 @@ namespace App\Models;
 use Core\Database;
 use PDO;
 use PDOException;
-use PDOStatement;
 
 class KaryawanModel
 {
@@ -26,16 +25,200 @@ class KaryawanModel
         }
     }
 
+    public function getAllActive($search = '', $jabatan = '', $page = 1)
+    {
+        try {
+            $limit = 10;
+            $offset = ($page - 1) * $limit;
+
+            // ? Base Query
+            $baseQuery = "FROM karyawan WHERE deleted_at IS NULL";
+            $params = [];
+
+            // ? Search
+            if (!empty($search)) {
+                $baseQuery .= " AND (nama LIKE :search OR nik LIKE :search)";
+                $params[':search'] = "%$search%";
+            }
+
+            // ? Filter jabatan
+            if (!empty($jabatan)) {
+                $baseQuery .= " AND jabatan = :jabatan";
+                $params[':jabatan'] = $jabatan;
+            }
+
+            $countSql = "SELECT COUNT(*) as total " . $baseQuery;
+            $stmt = $this->db->prepare($countSql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->execute();
+            $totalItems = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            $dataSql = "SELECT * " . $baseQuery . " ORDER BY nama ASC LIMIT :limit OFFSET :offset";
+            $stmt = $this->db->prepare($dataSql);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return [
+                'data' => $data,
+                'total' => $totalItems,
+                'pages' => ceil($totalItems / $limit)
+            ];
+        } catch (PDOException $e) {
+            error_log('Error getAll: ' . $e->getMessage());
+            return [
+                'data' => [],
+                'total' => 0,
+                'pages' => 1
+            ];
+        }
+    }
+
+    public function softDelete($id, $deletedBy)
+    {
+        try {
+            error_log("=== SOFT DELETE CALLED ===");
+            error_log("ID: " . $id);
+            error_log("Deleted By: " . $deletedBy);
+            $karyawan = $this->getKaryawanByIdIncludeDeleted($id);
+
+            if (!$karyawan || $karyawan['deleted_at'] !== null) {
+                error_log("karyawan tidak ditemukan");
+                return false;
+            }
+
+            $query = "UPDATE karyawan SET deleted_at = NOW(),deleted_by = :deleted_by WHERE id = :id AND deleted_at IS NULL";
+            error_log("Query: " . $query);
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->bindValue(':deleted_by', $deletedBy, PDO::PARAM_INT);
+            $result = $stmt->execute();
+
+            error_log("Row count: " . $stmt->rowCount());
+            error_log("Result: " . ($result ? 'true' : 'false'));
+
+            return $result;
+        } catch (PDOException $e) {
+            error_log("softDelete: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getAllDeleted($search = '', $page = 1)
+    {
+        try {
+            $limit = 10;
+            $offset = ($page - 1) * $limit;
+
+            $query = "SELECT k.*, u.username as deleted_by_username FROM karyawan k LEFT JOIN users u ON k.deleted_by = u.id WHERE k.deleted_at IS NOT NULL";
+
+            $countQuery = "SELECT COUNT(*) as total FROM karyawan WHERE deleted_at IS NOT NULL";
+
+            $params = [];
+
+            if (!empty($search)) {
+                $query .= " AND (k.nama LIKE :search OR k.nik LIKE :search)";
+                $countQuery .= " AND (nama LIKE :search OR nik LIKE :search)";
+                $params[':search'] = "%$search%";
+            }
+
+            $query .= " ORDER BY k.deleted_at DESC LIMIT :limit OFFSET :offset";
+
+            $stmt = $this->db->prepare($countQuery);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->execute();
+            $totalItems = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            $stmt = $this->db->prepare($query);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return [
+                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+                'total' => $totalItems,
+                'pages' => ceil($totalItems / $limit)
+            ];
+        } catch (PDOException $e) {
+            error_log('Error getAllDeleted: ' . $e->getMessage());
+
+            return [
+                'data' => [],
+                'total' => 0,
+                'pages' => 1
+            ];
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $query = "SELECT * FROM karyawan WHERE id = :id AND deleted_at IS NOT NULL";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $karyawan = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$karyawan) {
+                return false;
+            }
+
+            $query = "UPDATE karyawan SET deleted_at = null,deleted_by = null WHERE id = :id";
+
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $result = $stmt->execute();
+
+            if ($result) {
+                log_activity('restore', "Mengembalikan Karyawan: " . $karyawan['nama']);
+            }
+
+            return $result;
+        } catch (PDOException $e) {
+            error_log("Error restore: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getAllKaryawan(): array
     {
         try {
-            $query = "SELECT * FROM karyawan";
+            $query = "SELECT * FROM karyawan WHERE deleted_at IS NULL";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error getAllKaryawan " . $e->getMessage());
             return [];
+        }
+    }
+
+    public function getKaryawanByIdIncludeDeleted(int $id): ?array
+    {
+        try {
+            $query = "SELECT * FROM karyawan WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            error_log('Error getKaryawanByIdIncludedDeleted ' . $e->getMessage());
+            return null;
         }
     }
 
@@ -62,13 +245,27 @@ class KaryawanModel
     public function getKaryawanById(int $id): ?array
     {
         try {
-            $query = "SELECT * FROM karyawan WHERE id = :id";
+            $query = "SELECT * FROM karyawan WHERE id = :id AND deleted_at IS NULL";
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':id', $id);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
         } catch (PDOException $e) {
             error_log("Error getKaryawanById " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getDeletedKaryawanById(int $id): ?array
+    {
+        try {
+            $query = "SELECT * FROM karyawan WHERE id = :id AND deleted_at IS NOT NULL";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            error_log('Error getDeletedKaryawanById: ' . $e->getMessage());
             return null;
         }
     }
@@ -187,7 +384,7 @@ class KaryawanModel
         try {
             $offset = ($page - 1) * $perPage;
 
-            $query = "SELECT * FROM karyawan WHERE 1=1";
+            $query = "SELECT * FROM karyawan WHERE deleted_at IS NULL";
             $params = [];
 
             if (!empty($search)) {
@@ -220,7 +417,7 @@ class KaryawanModel
     public function getTotalCount(): int
     {
         try {
-            $query = "SELECT COUNT(*) as total FROM karyawan";
+            $query = "SELECT COUNT(*) as total FROM karyawan WHERE deleted_at IS NULL";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -232,10 +429,25 @@ class KaryawanModel
         }
     }
 
+    public function getTotalCountDeleted()
+    {
+        try {
+            $query = "SELECT COUNT(*) as total FROM karyawan WHERE deleted_at IS NOT NULL";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (int) ($result['total'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Error getTotalCountDeleted: " . $e->getMessage());
+            return 0;
+        }
+    }
+
     public function getTotalCountWithFilter(?string $search = null, ?string $jabatan = null): int
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM karyawan WHERE 1=1";
+            $sql = "SELECT COUNT(*) as total FROM karyawan WHERE deleted_at IS NULL";
             $params = [];
 
             if (!empty($search)) {
@@ -267,7 +479,7 @@ class KaryawanModel
     public function getTotalSalary(): float
     {
         try {
-            $query = "SELECT SUM(gaji) as total_gaji FROM karyawan";
+            $query = "SELECT SUM(gaji) as total_gaji FROM karyawan WHERE deleted_by IS NULL";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -282,7 +494,7 @@ class KaryawanModel
     public function getAverageSalary(): float
     {
         try {
-            $query = "SELECT AVG(gaji) as avg_gaji FROM karyawan";
+            $query = "SELECT AVG(gaji) as avg_gaji FROM karyawan WHERE deleted_by IS NULL";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);

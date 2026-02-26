@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\KaryawanModel;
 use Core\Controller;
 use Core\Auth;
+use PDOException;
 
 class KaryawanController extends Controller
 {
@@ -310,7 +311,17 @@ class KaryawanController extends Controller
     // ? Delete Method
     public function delete(int $id): void
     {
+        error_log("Delete method Called");
+        error_log("ID: " . $id);
+        error_log("Method: " . $_SERVER['REQUEST_METHOD']);
+        error_log("User: " . print_r(Auth::user(), true));
         try {
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
+
             $karyawan = $this->karyawanModel->getKaryawanById($id);
 
             if (!$karyawan) {
@@ -322,9 +333,9 @@ class KaryawanController extends Controller
             $namaKaryawan = $karyawan['nama'];
             $nikKaryawan = $karyawan['nik'];
 
-            if ($this->karyawanModel->delete($id)) {
+            if ($this->karyawanModel->softDelete($id, Auth::user()['id'])) {
                 log_activity(
-                    'delete',
+                    'soft_delete',
                     "Menghapus data karyawan: {$namaKaryawan} dengan nik: {$nikKaryawan})"
                 );
 
@@ -335,6 +346,86 @@ class KaryawanController extends Controller
         } catch (\Exception $e) {
             // Redirect dengan error message
             $_SESSION['error'] = 'Gagal menghapus data: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan');
+            exit;
+        }
+    }
+
+    public function trash(): void
+    {
+        try {
+            if (!Auth::isSuperAdmin()) {
+                $_SESSION['error'] = 'Akses ditolak! Hanya superadmin yang bisa membuka!';
+                header("Location: index.php?url=auth&action=unauthorized");
+                exit;
+            }
+
+            $search = $_GET['search'] ?? null;
+            $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $perPage = 10;
+
+            if ($currentPage < 1) {
+                $currentPage = 1;
+            }
+
+            $result = $this->karyawanModel->getAllDeleted($search ?? '', $currentPage);
+
+            $data = [
+                'judul' => 'Trash bin Karyawan',
+                'karyawan' => $result['data'],
+                'currentPage' => $currentPage,
+                'totalPages' => $result['pages'],
+                'totalItems' => $result['total'],
+                'perPage' => $perPage,
+                'search' => $search
+            ];
+
+            $this->view('karyawan/trash', $data);
+        } catch (PDOException $e) {
+            error_log('Error trash: ' . $e->getMessage());
+            $_SESSION['error'] = 'Terjadi kesalahan sat memuat data di Trash.';
+            header('Location: index.php?url=karyawan');
+            exit;
+        }
+    }
+
+    public function restore(int $id): void
+    {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
+
+            if (!Auth::isSuperAdmin()) {
+                $_SESSION['error'] = 'Akses ditolak! Hanya superadmin yang bisa membuka!';
+                header("Location: index.php?url=auth&action=unauthorized");
+                exit;
+            }
+
+            $karyawan = $this->karyawanModel->getDeletedKaryawanById($id);
+
+            if (!$karyawan) {
+                $_SESSION['error'] = 'Data karyawan tidak ditemukan di trash!';
+                header('Location: index.php?url=karyawan');
+                exit;
+            }
+
+            $namaKaryawan = $karyawan['nama'];
+            $nikKaryawan = $karyawan['nik'];
+
+            if ($this->karyawanModel->restore($id)) {
+                log_activity('restore', 'Mengembalikan karyawan: {$namaKaryawan} (NIK: {$nikKaryawan})');
+
+                $_SESSION['success'] = "Karyawan {$namaKaryawan} berhasil dikembalikan!";
+            } else {
+                $_SESSION['error'] = 'Gagal mengembalikan karyawan';
+            }
+
+            header('Location: index.php?url=karyawan');
+            exit;
+        } catch (PDOException $e) {
+            error_log('Error restore : ' . $e->getMessage());
             header('Location: index.php?url=karyawan');
             exit;
         }

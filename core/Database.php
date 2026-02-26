@@ -7,17 +7,15 @@ use PDOException;
 
 class Database
 {
-    private string $host;
-    private string $dbName;
-    private string $username;
-    private string $password;
+    private string $host = DB_HOST;
+    private string $dbName = DB_NAME;
+    private string $username = DB_NAME;
     private ?PDO $pdo = null;
 
     private static ?Database $instance = null;
 
     public function __construct()
     {
-        $this->loadEnv();
         $this->validateConfig();
         $this->connect();
     }
@@ -37,24 +35,6 @@ class Database
         throw new \Exception("Cannot unserialize singelton");
     }
 
-    private function loadEnv(): void
-    {
-        // ! Default Value
-        $this->host = 'localhost';
-        $this->dbName = 'db_karyawan';
-        $this->username = 'root';
-        $this->password = '';
-
-        $envFile = __DIR__ . '/../.env';
-        if (file_exists($envFile)) {
-            $env = parse_ini_file($envFile);
-            $this->host = $env['DB_HOST'] ?? $this->host;
-            $this->dbName = $env['DB_NAME'] ?? $this->dbName;
-            $this->username = $env['DB_USER'] ?? $this->username;
-            $this->password = $env['DB_PASSWORD'] ?? $this->password;
-        }
-    }
-
     private function validateConfig(): void
     {
         $errors = [];
@@ -67,7 +47,7 @@ class Database
         }
 
         if (empty($this->dbName)) {
-            $errors[] = "Database tidal boleh kosong";
+            $errors[] = "Database tidak boleh kosong";
         }
 
         if (!empty($this->host) && !preg_match('/^[a-zA-Z0-9\.\-]+$/', $this->host)) {
@@ -82,9 +62,8 @@ class Database
     private function connect(): void
     {
         try {
-            $dsn = "mysql:host=$this->host;
-            dbname=$this->dbName;charset=utf8mb4";
-            $this->pdo = new PDO($dsn, $this->username, $this->password);
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $this->pdo = new PDO($dsn, DB_USER, DB_PASS);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {

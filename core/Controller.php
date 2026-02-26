@@ -21,4 +21,23 @@ class Controller
         extract($data);
         include_once __DIR__ . "/../app/views/partials/{$partial}.php";
     }
+
+    protected function redirect($url, $message = null, $type = 'success')
+    {
+        if (strpos($url, 'index.php?') === 0) {
+            $fullUrl = BASE_URL . '/' . $url;
+        } else {
+            $url = ltrim($url, '/');
+            $fullUrl = BASE_URL . '/' . $url;
+        }
+
+        if ($message) {
+            $_SESSION['flash'] = [
+                'message' => $message,
+                'type' => $type
+            ];
+        }
+        header('Location: ' . BASE_URL . $fullUrl);
+        exit;
+    }
 }

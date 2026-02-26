@@ -299,13 +299,16 @@
                                             <i class="bi bi-pencil mr-1"></i>
                                             Edit
                                         </a>
-                                        <a href="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
-                                            data-confirm-delete
-                                            data-item-name="<?= htmlspecialchars($k['nama']) ?>"
-                                            class="bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center text-sm">
-                                            <i class="bi bi-trash mr-1"></i>
-                                            Hapus
-                                        </a>
+                                        <form method="POST"
+                                            action="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
+                                            style="display: inline;"
+                                            onsubmit="deleteWithCustomModal(event, this, '<?= htmlspecialchars($k['nama']) ?>')">
+                                            <button type="submit"
+                                                class="bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center text-sm">
+                                                <i class="bi bi-trash mr-1"></i>
+                                                Hapus
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

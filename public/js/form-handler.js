@@ -178,16 +178,27 @@ class FormHandler {
   }
 
   setupDeleteConfirmations() {
-    // Delete confirmation with sweet alert style
-    document.addEventListener("click", (e) => {
-      if (e.target.closest("[data-confirm-delete]")) {
-        e.preventDefault();
-        const link = e.target.closest("a");
-        const itemName = link.getAttribute("data-item-name") || "data ini";
+    // Handle form submission with data-confirm-delete
+    document.addEventListener("submit", function (e) {
+      const form = e.target.closest("form[data-confirm-delete]");
+      if (!form) return;
 
-        this.showDeleteConfirmation(itemName, () => {
-          window.location.href = link.href;
+      e.preventDefault(); // Stop submission
+
+      const itemName = form.getAttribute("data-item-name") || "data ini";
+
+      // PAKE INI: window.FormHandler (huruf besar F)
+      if (window.FormHandler) {
+        window.FormHandler.showDeleteConfirmation(itemName, function () {
+          // Unbind event listener temporarily to avoid loop
+          form.removeEventListener("submit", arguments.callee);
+          form.submit();
         });
+      } else {
+        // Fallback ke confirm biasa
+        if (confirm(`Yakin ingin menghapus ${itemName}?`)) {
+          form.submit();
+        }
       }
     });
   }
@@ -271,8 +282,4 @@ const formHandler = new FormHandler();
 
 // Make it available globally
 window.FormHandler = formHandler;
-
-// Auto-initialize when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  new FormHandler();
-});
+window.formHandler = formHandler;
