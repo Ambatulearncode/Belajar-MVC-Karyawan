@@ -164,7 +164,7 @@
 
     <!-- JavaScript Files -->
     <script src="/belajar-mvc-karyawan/public/js/notifications.js"></script>
-    <script src="/belajar-mvc-karyawan/public/js/form-handler.js"></script>
+    <script src="/belajar-mvc-karyawan/public/js/form-handler.js?v<?= filemtime('/belajar-mvc-karyawan/public/js/form-handler.js') ?>"></script>
 
     <!-- Custom JavaScript -->
     <script>

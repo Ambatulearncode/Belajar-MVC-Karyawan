@@ -41,7 +41,7 @@
                         <!-- Menu untuk SuperAdmin (role 'superadmin') -->
                         <?php if ($_SESSION['user']['role'] === 'superadmin'): ?>
                             <a href="index.php?url=karyawan"
-                                class="px-3 py-2 rounded-lg <?= ($_GET['url'] ?? '') == 'karyawan' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition text-sm">
+                                class="px-3 py-2 rounded-lg <?= (($_GET['url'] ?? '') == 'karyawan' && ($_GET['action'] ?? '') != 'trash') == 'karyawan' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition text-sm">
                                 <i class="bi bi-people mr-1"></i> <span class="hidden lg:inline">Karyawan</span>
                             </a>
                             <a href="index.php?url=admin&action=index"
@@ -51,6 +51,10 @@
                             <a href="index.php?url=activity-log"
                                 class="px-3 py-2 rounded-lg <?= ($_GET['url'] ?? '') == 'activity-log' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition text-sm">
                                 <i class="bi bi-activity mr-1"></i> <span class="hidden lg:inline">Activity Log</span>
+                            </a>
+                            <a href="index.php?url=karyawan&action=trash"
+                                class="px-3 py-2 rounded-lg <?= ($_GET['action'] ?? '') == 'trash' ? 'bg-white/20' : 'hover:bg-white/10 ' ?> transition text-sm">
+                                <i class="bi bi-trash3 mr-1"></i> <span class="hidden lg:inline">Tong Sampah</span>
                             </a>
                             <!-- Menu untuk Admin biasa (role 'admin') -->
                         <?php elseif ($_SESSION['user']['role'] === 'admin'): ?>
@@ -141,6 +145,11 @@
                             class="flex items-center px-4 py-3 rounded-lg <?= ($_GET['url'] ?? '') == 'activity-log' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition">
                             <i class="bi bi-activity mr-1"></i>
                             Activity Log
+                        </a>
+                        <a href="index.php?url=karyawan&action=trash"
+                            class="flex items-center px-4 py-3 rounded-lg <?= ($_GET['action'] ?? '') == 'trash' ? 'bg-white/20' : 'hover:bg-white/10' ?> transition">
+                            <i class="bi bi-trash3 mr-3"></i>
+                            Tong Sampah
                         </a>
 
                         <!-- Menu untuk Admin biasa -->

@@ -56,6 +56,9 @@ switch ($url) {
             case 'index':
                 $controller->index();
                 break;
+            case 'trash':
+                $controller->trash();
+                break;
             case 'create':
                 $controller->create();
                 break;
@@ -67,6 +70,13 @@ switch ($url) {
                     $controller->edit((int)$id);
                 } else {
                     $controller->index();
+                }
+                break;
+            case 'restore':
+                if ($id) {
+                    $controller->restore((int)$id);
+                } else {
+                    $controller->trash();
                 }
                 break;
             case 'update':
@@ -81,6 +91,13 @@ switch ($url) {
                     $controller->delete((int)$id);
                 } else {
                     $controller->index();
+                }
+                break;
+            case 'hard-delete':
+                if ($id) {
+                    $controller->hardDelete((int)$id);
+                } else {
+                    $controller->trash();
                 }
                 break;
             default:

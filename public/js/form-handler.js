@@ -203,31 +203,50 @@ class FormHandler {
     });
   }
 
-  showDeleteConfirmation(itemName, callback) {
+  showDeleteConfirmation(itemName, callback, type = "delete") {
+    console.log("showDeleteConfirmation dipanggil dengan:", { itemName, type });
     const modal = document.createElement("div");
     modal.className =
       "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4";
+
+    // Tentukan konfigurasi berdasarkan type
+    const isRestore = type === "restore";
+
+    // Icon dan warna berbeda
+    const icon = isRestore ? "bi-arrow-return-left" : "bi-exclamation-triangle";
+    const bgColor = isRestore ? "bg-green-100" : "bg-red-100";
+    const iconColor = isRestore ? "text-green-600" : "text-red-600";
+    const title = isRestore ? "Konfirmasi Restore" : "Konfirmasi Hapus";
+    const message = isRestore
+      ? `Yakin ingin mengembalikan data <span class="font-semibold">"${itemName}"</span>?`
+      : `Yakin ingin menghapus <span class="font-semibold">"${itemName}"</span>? Tindakan ini tidak dapat dibatalkan.`;
+    const confirmText = isRestore ? "Restore" : "Hapus";
+    const confirmBg = isRestore
+      ? "bg-green-600 hover:bg-green-700"
+      : "bg-red-600 hover:bg-red-700";
+    const cancelBg = "bg-gray-100 hover:bg-gray-200";
+
     modal.innerHTML = `
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all">
-                <div class="p-6">
-                    <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                        <i class="bi bi-exclamation-triangle text-red-600 text-xl"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
-                    <p class="text-sm text-gray-500 text-center mb-6">
-                        Yakin ingin menghapus <span class="font-semibold">"${itemName}"</span>? Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                    <div class="flex gap-3">
-                        <button type="button" class="btn-cancel flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition">
-                            Batal
-                        </button>
-                        <button type="button" class="btn-confirm flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition">
-                            Hapus
-                        </button>
-                    </div>
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto ${bgColor} rounded-full mb-4">
+                    <i class="bi ${icon} ${iconColor} text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 text-center mb-2">${title}</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    ${message}
+                </p>
+                <div class="flex gap-3">
+                    <button type="button" class="btn-cancel flex-1 ${cancelBg} text-gray-800 py-2 px-4 rounded-lg transition">
+                        Batal
+                    </button>
+                    <button type="button" class="btn-confirm flex-1 ${confirmBg} text-white py-2 px-4 rounded-lg transition">
+                        ${confirmText}
+                    </button>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
     document.body.appendChild(modal);
 
@@ -248,6 +267,55 @@ class FormHandler {
     });
   }
 
+  showRestoreConfirmation(itemName, callback) {
+    const modal = document.createElement("div");
+    modal.className =
+      "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4";
+
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+                    <i class="bi bi-arrow-return-left text-green-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Konfirmasi Restore</h3>
+                <p class="text-sm text-gray-500 text-center mb-6">
+                    Yakin ingin mengembalikan data <span class="font-semibold">"${itemName}"</span>?
+                </p>
+                <div class="flex gap-3">
+                    <button type="button" class="btn-cancel flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition">
+                        Batal
+                    </button>
+                    <button type="button" class="btn-confirm flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">
+                        Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector(".btn-cancel").addEventListener("click", () => {
+      document.body.removeChild(modal);
+    });
+
+    modal.querySelector(".btn-confirm").addEventListener("click", () => {
+      document.body.removeChild(modal);
+      if (callback) callback();
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+  }
+
+  test() {
+    alert("FormHandler is working!");
+    console.log("FormHandler test method called");
+  }
   setupLoadingStates() {
     // Add loading state to submit buttons
     document.addEventListener("submit", (e) => {

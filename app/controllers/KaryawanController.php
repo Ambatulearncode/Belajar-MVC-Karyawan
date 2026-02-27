@@ -351,6 +351,52 @@ class KaryawanController extends Controller
         }
     }
 
+    public function hardDelete(int $id): void
+    {
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                header('Location: index.php?url=karyawan&action=trash');
+                exit;
+            }
+
+            if (!Auth::isSuperAdmin()) {
+                $_SESSION['error'] = 'Akses ditolak! Hanya superadmin yang bisa menghapus permanen.';
+                header("Location: index.php?url=auth&action=unauthorized");
+                exit;
+            }
+
+            $karyawan = $this->karyawanModel->getDeletedKaryawanById($id);
+
+            if (!$karyawan) {
+                $_SESSION['error'] = 'Data karyawan tidak ditemukan di tong sampah!';
+                header('Location: index.php?url=karyawan&action=trash');
+                exit;
+            }
+
+            $namaKaryawan = $karyawan['nama'];
+            $nikKaryawan = $karyawan['nik'];
+
+            if ($this->karyawanModel->delete($id)) {
+                log_activity(
+                    'hard_delete',
+                    "Menghapus permanen karyawan: {$namaKaryawan} (NIK: {$nikKaryawan})"
+                );
+
+                $_SESSION['success'] = "Data karyawan {$namaKaryawan} berhasil dihapus permanen!";
+            } else {
+                $_SESSION['error'] = 'Gagal menghapus permanen data karyawan!';
+            }
+
+            header('Location: index.php?url=karyawan&action=trash');
+            exit;
+        } catch (PDOException $e) {
+            error_log('Error hardDelete : ' . $e->getMessage());
+            $_SESSION['error'] = 'Terjadi kesalahan saat menghapus permanen: ' . $e->getMessage();
+            header('Location: index.php?url=karyawan&action=trash');
+            exit;
+        }
+    }
+
     public function trash(): void
     {
         try {
@@ -417,7 +463,7 @@ class KaryawanController extends Controller
             if ($this->karyawanModel->restore($id)) {
                 log_activity('restore', 'Mengembalikan karyawan: {$namaKaryawan} (NIK: {$nikKaryawan})');
 
-                $_SESSION['success'] = "Karyawan {$namaKaryawan} berhasil dikembalikan!";
+                $_SESSION['success'] = "Karyawan {$namaKaryawan} (NIK: {$nikKaryawan} berhasil dikembalikan!";
             } else {
                 $_SESSION['error'] = 'Gagal mengembalikan karyawan';
             }

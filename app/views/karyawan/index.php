@@ -302,7 +302,13 @@
                                         <form method="POST"
                                             action="?url=karyawan&action=delete&id=<?= $k['id'] ?>"
                                             style="display: inline;"
-                                            onsubmit="deleteWithCustomModal(event, this, '<?= htmlspecialchars($k['nama']) ?>')">
+                                            onsubmit="event.preventDefault(); 
+                                                if(window.FormHandler) { 
+                                                window.FormHandler.showDeleteConfirmation(
+                                                    '<?= htmlspecialchars($k['nama']) ?>', 
+                                                    () => this.submit()
+                                                ); 
+                                            }">
                                             <button type="submit"
                                                 class="bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg shadow hover:shadow-md transition-all duration-200 inline-flex items-center text-sm">
                                                 <i class="bi bi-trash mr-1"></i>
